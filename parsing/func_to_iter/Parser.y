@@ -46,10 +46,6 @@ import Tokenizer
     ';' { TokenPos TokenSemicolon _ }
     ',' { TokenPos TokenComma _ }
 
-%left '*' '+' '-' '/' '||' '&&'
-%left '!'
-%nonassoc '==' '!=' '<' '>' '<=' '>=' 
-
 %%
 
 Language : FunctionS { $1 }
