@@ -36,9 +36,12 @@ import Tokenizer
     num { TokenPos (TokenInteger $$) _ }
     int { TokenPos TokenTypeInteger _ }
     void { TokenPos TokenTypeVoid _ }
+    true { TokenPos TokenTrue _ }
+    false { TokenPos TokenFalse _ }
     '->' { TokenPos TokenArrow _ }
     '::' { TokenPos TokenOfType _ }
-    any { TokenPos TokenAny _ }
+    '|' { TokenPos TokenVert _ }
+    '_' { TokenPos TokenAny _ }
     '.' { TokenPos TokenPeriod _ }
     ';' { TokenPos TokenSemicolon _ }
     ',' { TokenPos TokenComma _ }
@@ -70,7 +73,10 @@ SignatureM : Signature { [$1] }
 FunctionClauseM : FunctionClause { [$1] }
                 | FunctionClauseM ';' FunctionClause { $3 : $1 }
 
-FunctionClause : id ArgumentS '=' Expr { FunctionClause $1 $2 $4 }
+FunctionClause : id ArgumentS FunctionGuard '=' Expr { FunctionClause $1 $2 $3 $5 }
+
+FunctionGuard : { LTrue }
+              | '|' LExpr { $2 }
 
 ArgumentS : { [] }
           | ArgumentM { $1 }
@@ -80,6 +86,7 @@ ArgumentM : Argument { [$1] }
          
 Argument : id { NamedArg $1 }
          | num { NumericArg $1 }
+         | '_' { AnyArg }
 
 
 Expr : Expr '+' Term { Plus $1 $3 }
@@ -112,6 +119,8 @@ LTerm : LTerm '&&' LFactor { And $1 $3 }
       | LFactor { $1 }
 
 LFactor : '!' LFactor { Not $2 }
+        | true { LTrue }
+        | false { LFalse }
         | Expr '==' Expr { Eq $1 $3 }
         | Expr '!=' Expr { Not . Eq $1 $ $3 }
         | Expr '<' Expr { Less $1 $3 }
@@ -123,6 +132,7 @@ LFactor : '!' LFactor { Not $2 }
 {
 data Argument = NamedArg String 
               | NumericArg Integer
+              | AnyArg
               deriving Show
 
 data TypeDecl = TypeInteger 
@@ -136,7 +146,8 @@ data LExpr = Or LExpr LExpr
            | Eq Expr Expr
            | Gr Expr Expr
            | Less Expr Expr
-           | LExpr LExpr
+           | LTrue
+           | LFalse
            deriving Show
 
 data Expr = Plus Expr Expr 
@@ -162,7 +173,7 @@ instance Monad ParsingState where
                     Failed s -> Failed s
                     OK a -> f a
 
-data FunctionClause = FunctionClause String [Argument] Expr
+data FunctionClause = FunctionClause String [Argument] LExpr Expr
                     deriving Show
 data Function = Function String TypeDecl [FunctionClause]
               deriving Show

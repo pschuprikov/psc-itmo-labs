@@ -1,3 +1,6 @@
-ololo :: Integer -> ((Integer -> Integer -> (Void -> Integer) )-> Integer) -> Void
-ololo n = 5;
-ololo y = \ x :: Integer -> Integer { 5 + 6 + 7 + 9 * 3 }(y).
+ololo :: Integer -> Integer -> (Integer -> Integer) -> (Integer -> Integer ) -> Integer
+ololo n k ft _ | n <= k = ft (n);
+ololo n _ _ ff = ff (n).
+
+test :: Void -> Integer
+test = ololo(5, 2, (\x :: Integer -> Integer { \x :: Integer -> Integer { x } (x + 1)}), (\x :: Integer -> Integer {x - 1})).

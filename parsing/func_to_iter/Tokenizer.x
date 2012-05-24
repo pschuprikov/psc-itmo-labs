@@ -37,12 +37,15 @@ toknes :-
     then    { \p s -> TokenPos TokenThen p }
     else    { \p s -> TokenPos TokenElse p }
     fi      { \p s -> TokenPos TokenFi p }
+    true    { \p s -> TokenPos TokenTrue p }
+    false   { \p s -> TokenPos TokenFalse p }
     \\      { \p s -> TokenPos TokenLambda p }
     =       { \p s -> TokenPos TokenAssign p }
     _       { \p s -> TokenPos TokenAny p }
     \,      { \p s -> TokenPos TokenComma p } 
     \.      { \p s -> TokenPos TokenPeriod p }
     \;      { \p s -> TokenPos TokenSemicolon p }
+    \|      { \p s -> TokenPos TokenVert p }
 {
 
 data TokenPos = TokenPos Token AlexPosn
@@ -56,6 +59,7 @@ data Token = TokenOP
            | TokenPlus
            | TokenMinus
            | TokenStar
+           | TokenVert
            | TokenDiv
            | TokenGr
            | TokenGrEq
@@ -74,6 +78,8 @@ data Token = TokenOP
            | TokenThen
            | TokenElse
            | TokenFi
+           | TokenTrue
+           | TokenFalse
            | TokenLambda
            | TokenAssign
            | TokenAny
