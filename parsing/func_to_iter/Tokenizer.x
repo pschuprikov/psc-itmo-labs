@@ -27,18 +27,18 @@ toknes :-
     \|\|    { \p s -> TokenPos TokenOr p }
     &&      { \p s -> TokenPos TokenAnd p }
     !       { \p s -> TokenPos TokenNot p }
-    [a-z] [$alpha $digit \_]*  { \p s -> TokenPos (TokenId s) p }
-    Integer { \p s -> TokenPos TokenTypeInteger p }
-    Void    { \p s -> TokenPos TokenTypeVoid p }
-    $digit+ { \p s -> TokenPos (TokenInteger (read s)) p }
-    \-\>    { \p s -> TokenPos TokenArrow p }
-    ::      { \p s -> TokenPos TokenOfType p }
     if      { \p s -> TokenPos TokenIf p }
     then    { \p s -> TokenPos TokenThen p }
     else    { \p s -> TokenPos TokenElse p }
     fi      { \p s -> TokenPos TokenFi p }
     true    { \p s -> TokenPos TokenTrue p }
     false   { \p s -> TokenPos TokenFalse p }
+    [a-z] [$alpha $digit \_]*  { \p s -> TokenPos (TokenId s) p }
+    Integer { \p s -> TokenPos TokenTypeInteger p }
+    Void    { \p s -> TokenPos TokenTypeVoid p }
+    $digit+ { \p s -> TokenPos (TokenInteger (read s)) p }
+    \-\>    { \p s -> TokenPos TokenArrow p }
+    ::      { \p s -> TokenPos TokenOfType p }
     \\      { \p s -> TokenPos TokenLambda p }
     =       { \p s -> TokenPos TokenAssign p }
     _       { \p s -> TokenPos TokenAny p }

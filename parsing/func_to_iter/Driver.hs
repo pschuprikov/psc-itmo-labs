@@ -122,51 +122,30 @@ gen_arg_conditions ((NumericArg n):as) k = And (Eq (Num n) (Var $ gen_arg_name k
 -- Expression generators stuff. Logical is clear.
 --
 
+gen_binary_op :: a -> a -> (a -> GSM String ) -> String  -> GSM String
+gen_binary_op a b gen op = do { as <- gen a
+                              ; bs <- gen b
+                              ; return $ "(" ++ as ++ ") " ++ op ++ " (" ++ bs ++ ")"
+                              }
+
 gen_lexpr :: LExpr -> GSM String
-gen_lexpr (Or l1 l2) = do { l1s <- gen_lexpr l1
-                           ; l2s <- gen_lexpr l2
-                           ; return $ "(" ++ l1s ++ ") || (" ++ l2s ++ ")"
-                           }
-gen_lexpr (And l1 l2) = do { l1s <- gen_lexpr l1
-                            ; l2s <- gen_lexpr l2
-                            ; return $ "(" ++ l1s ++ ") && (" ++ l2s ++ ")"
-                            }
+gen_lexpr (Or l1 l2) = gen_binary_op l1 l2 gen_lexpr "||" 
+gen_lexpr (And l1 l2) = gen_binary_op l1 l2 gen_lexpr "&&"
 gen_lexpr (Not l1) = do { ls <- gen_lexpr l1
                         ; return $ '!' : "(" ++ ls ++ ")"
                         }
-gen_lexpr (Eq e1 e2) = do { e1s <- gen_expr e1
-                          ; e2s <- gen_expr e2
-                          ; return $ "(" ++ e1s ++ ") == (" ++ e2s ++ ")"
-                          }
-gen_lexpr (Gr e1 e2) = do { e1s <- gen_expr e1
-                          ; e2s <- gen_expr e2
-                          ; return $ "(" ++ e1s ++ ") > (" ++ e2s ++ ")"
-                          }
-gen_lexpr (Less e1 e2) = do { e1s <- gen_expr e1
-                            ; e2s <- gen_expr e2
-                            ; return $ "(" ++ e1s ++ ") < (" ++ e2s ++ ")"
-                            }
+gen_lexpr (Eq e1 e2) = gen_binary_op e1 e2 gen_expr "=="
+gen_lexpr (Gr e1 e2) = gen_binary_op e1 e2 gen_expr ">"
+gen_lexpr (Less e1 e2) = gen_binary_op e1 e2 gen_expr "<"
 gen_lexpr LTrue = return "true"
 gen_lexpr LFalse = return "false"
 
 -- | Generates string representation of an expression. Note a lambda addition to Generation State.
 gen_expr :: Expr -> GSM String
-gen_expr (Plus e1 e2) = do { e1s <- gen_expr e1
-                           ; e2s <- gen_expr e2
-                           ; return $ "(" ++ e1s ++ ") + (" ++ e2s ++ ")"
-                           }
-gen_expr (Sub e1 e2) = do { e1s <- gen_expr e1
-                          ; e2s <- gen_expr e2
-                          ; return $ "(" ++ e1s ++ ") - (" ++ e2s ++ ")"
-                          }
-gen_expr (Mult e1 e2) = do { e1s <- gen_expr e1
-                           ; e2s <- gen_expr e2
-                           ; return $ "(" ++ e1s ++ ") * (" ++ e2s ++ ")"
-                           }
-gen_expr (Div e1 e2) = do { e1s <- gen_expr e1
-                          ; e2s <- gen_expr e2
-                          ; return $ "(" ++ e1s ++ ") / (" ++ e2s ++ ")"
-                          }
+gen_expr (Plus e1 e2) = gen_binary_op e1 e2 gen_expr "+"
+gen_expr (Sub e1 e2) = gen_binary_op e1 e2 gen_expr "-"
+gen_expr (Mult e1 e2) = gen_binary_op e1 e2 gen_expr "*"
+gen_expr (Div e1 e2) = gen_binary_op e1 e2 gen_expr "/"
 gen_expr (Var name) = return name
 gen_expr (Num int) = return (show int)
 gen_expr (IfClause le e1 e2) = do { les <- gen_lexpr le

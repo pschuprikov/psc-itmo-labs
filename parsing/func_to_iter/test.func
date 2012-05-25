@@ -1,5 +1,5 @@
 ololo :: Integer -> Integer -> (Integer -> Integer) -> (Integer -> Integer ) -> Integer
-ololo n k ft _ | n <= k = ft (n);
+ololo n k ft _ | n <= k = if (n <= k / 2) then ft (n) else ft (2 * n) fi;
 ololo n _ _ ff = ff (n).
 
 test :: Void -> Integer
