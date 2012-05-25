@@ -11,6 +11,6 @@ main = do { args <- getArgs
           ; funcSource <- readFile fileName
           ; parsed <- return . parse . alexScanTokens $ funcSource
           ; case parsed of 
-                OK lang -> translate lang modName
+                OK lang    -> translate lang modName
                 Failed msg -> error msg
           }
