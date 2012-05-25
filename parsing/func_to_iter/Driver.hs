@@ -8,7 +8,7 @@ import Control.Monad.State;
 data DeclUnit = DeclUnit TypeDecl (Maybe String)
 
 --strores information about current builded function, used lambda functions last used in this function lambda's index and signatures of all functions
-data GenerationState = GenerationState {func_name :: String, lambdas :: [Function], last_lambda :: Int, func_decls :: [String]}
+data GenerationState = GenerationState {func_name :: String, lambdas :: [Function], last_lambda :: Int, func_decls :: [String], lambda_decls :: [String]}
 type GSM = State GenerationState
 
 --
@@ -16,23 +16,34 @@ type GSM = State GenerationState
 --
 
 start_function :: String -> GSM ()
-start_function fname = modify (\s -> GenerationState {func_name = fname, lambdas = [], last_lambda = 0, func_decls = func_decls s}) 
+start_function fname = modify (\s -> GenerationState {func_name = fname, lambdas = [], last_lambda = 0, func_decls = func_decls s, lambda_decls = lambda_decls s}) 
 
 add_func_decl :: String -> GSM ()
-add_func_decl decl = modify (\s -> GenerationState {func_name = func_name s, 
-                                                    lambdas = lambdas s, 
-                                                    last_lambda = last_lambda s, 
-                                                    func_decls = decl : (func_decls s)})
+add_func_decl decl = modify (\s -> if (head . func_name $ s) == '_' then 
+                                                 GenerationState {func_name = func_name s, 
+                                                 lambdas = lambdas s, 
+                                                 last_lambda = last_lambda s, 
+                                                 func_decls = func_decls s,
+                                                 lambda_decls = decl : (lambda_decls s)}
+                                             else
+                                                 GenerationState {func_name = func_name s, 
+                                                 lambdas = lambdas s, 
+                                                 last_lambda = last_lambda s, 
+                                                 func_decls = decl : (func_decls s),
+                                                 lambda_decls = lambda_decls s}
+                                      )
+                                                
 
 add_lambda :: Function -> GSM ()
 add_lambda f = modify (\s -> GenerationState { func_name = func_name s,
                                                lambdas = f : (lambdas s),
                                                last_lambda = last_lambda s + 1,
-                                               func_decls = func_decls s})
+                                               func_decls = func_decls s,
+                                               lambda_decls = lambda_decls s})
 
 get_lambdas_and_end :: GSM [Function] 
 get_lambdas_and_end = do { lmbds <- gets (\ (GenerationState { lambdas = ls }) -> ls)
-                         ; modify (\(GenerationState { func_decls = fds }) -> GenerationState {func_decls = fds})
+                         ; modify (\(GenerationState { func_decls = fds, lambda_decls = lmbdds}) -> GenerationState {func_decls = fds, lambda_decls = lmbdds})
                          ; return lmbds
                          }
 
@@ -116,7 +127,7 @@ gen_arg_conditions :: [Argument] -> Int -> LExpr
 gen_arg_conditions [] 0 = LTrue
 gen_arg_conditions ((NamedArg _):as) k = gen_arg_conditions as (k - 1) 
 gen_arg_conditions (AnyArg:as) k = gen_arg_conditions as (k - 1)
-gen_arg_conditions ((NumericArg n):as) k = And (Eq (Num n) (Var $ gen_arg_name k)) $ gen_arg_conditions as (k - 1)
+gen_arg_conditions ((NumericArg n):as) k = And (Eq (Num n) (Var $ gen_arg_name (k - 1))) $ gen_arg_conditions as (k - 1)
 
 --
 -- Expression generators stuff. Logical is clear.
@@ -189,9 +200,13 @@ gen_function (Function id types clauses) = let ComplexType (r:as) = simplify_typ
                                                           ; lambdas_strs <- mapM gen_function lambdas
                                                           ; return $ funcdecl ++ "\n{\n" ++ (concat clauses) ++ "\n}\n\n" ++ (concat lambdas_strs)
                                                           }
--- | Simple driver. Firstly outputs forward declarations, and then function implementations.
-translate :: Language -> IO ()
-translate functions = let (res, (GenerationState {func_decls = fds})) = runState (mapM gen_function functions) (GenerationState {lambdas = [], func_decls = [] }) in 
-                        do { mapM_ putStrLn . map (\s -> s ++ ";\n") $ fds
-                           ; mapM_ putStrLn res
+-- | Simple driver. Firstly gens header, then forwards of lambdas and finally the code.
+translate :: Language -> String -> IO ()
+translate functions name = let (res, (GenerationState {func_decls = fds, lambda_decls = lmbds})) 
+                                = runState (mapM gen_function functions) (GenerationState { lambdas = []
+                                                                                    , func_decls = []
+                                                                                    , lambda_decls = []
+                                                                                    }) in 
+                        do { writeFile (name ++ ".h") (concat . map (\s -> "extern " ++ s ++ ";\n") $ fds)
+                           ; writeFile (name ++ ".cpp") ("#include \"" ++ name ++ ".h\"\n\n" ++ (concat . map (\s -> s ++ ";\n") $ lmbds) ++ "\n" ++ (concat res))
                            }

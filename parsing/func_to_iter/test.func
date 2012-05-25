@@ -4,3 +4,7 @@ ololo n _ _ ff = ff (n).
 
 test :: Void -> Integer
 test = ololo(5, 2, (\x :: Integer -> Integer { \x :: Integer -> Integer { x } (x + 1)}), (\x :: Integer -> Integer {x - 1})).
+
+fac :: Integer -> Integer
+fac 0 = 1;
+fac n = fac(n - 1) * n. 

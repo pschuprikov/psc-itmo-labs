@@ -12,9 +12,14 @@ Tokenizer.hs : Tokenizer.x
 Parser.hs : Parser.y
 	happy Parser.y
 
-main.cpp : test.func trans
-	./trans test.func > main.cpp && gcc -c main.cpp
+ololo.o : test.func trans
+	./trans test.func ololo && g++ -c ololo.cpp
+
+ololo.h : ololo.o
 
 
-clear: 
-	rm *.hi *.o *.cpp Tokenizer.hs Parser.hs trans
+main : ololo.o ololo.h main.cpp
+	g++ -o main main.cpp ololo.o
+
+clean: 
+	rm *.hi *.o ololo.cpp Tokenizer.hs Parser.hs trans main
