@@ -4,70 +4,134 @@
 #include <boost/mpl/begin.hpp>
 #include <boost/mpl/end.hpp>
 #include <boost/variant.hpp>
+#include <boost/fusion/container.hpp>
 #include <string>
 
-#include "parser_gen.h"
+#include "parser_gen.hpp"
+#include "rule_action.hpp"
 
+using namespace boost;
 using boost::variant;
 using boost::mpl::vector;
 using boost::mpl::push_back;
 using boost::mpl::begin;
 using boost::mpl::end;
+using boost::mpl::set;
+using boost::mpl::equal;
+using boost::mpl::insert;
 
-template<int def>
-struct default_int
+typedef utils::letter_nterm<'E'> E;
+typedef utils::letter_nterm<'Q'> Q;
+typedef utils::letter_nterm<'F'> F;
+typedef utils::letter_nterm<'N'> N;
+typedef utils::letter_nterm<'M'> M;
+typedef utils::letter_nterm<'S'> S;
+typedef utils::letter_nterm<'P'> P;
+typedef utils::letter_term<'!'> nott;
+typedef utils::letter_term<'^'> xorr;
+typedef utils::letter_term<'&'> andd;
+typedef utils::letter_term<'|'> orr;
+typedef utils::letter_term<'n'> id;
+typedef utils::letter_term<'('> op;
+typedef utils::letter_term<')'> cp;
+
+struct lexer
 {
-    default_int()
-        : val(def)
-    {}
-
-    operator int() const
+    lexer(std::string const& str)
+        : str(str), cur(0)
     {
-        return val;
+
     }
 
-    int val;
+    variant<xorr, nott, id, op, cp, andd, orr, parser_gen::t_eof>& cur_token() const
+    {
+        if (cur >= str.size())
+            id_ = parser_gen::t_eof();
+        else
+        {
+            switch (str[cur])
+            {
+            case '|' :
+                id_ = orr();
+                break;
+            case ')' :
+                id_ = cp();
+                break;
+            case '(' :
+                id_ = op();
+                break;
+            case 'n' :
+                id_ = id();
+                break;
+            case '&' :
+                id_ = andd();
+                break;
+            case '^' :
+                id_ = xorr();
+                break;
+            case '!' :
+                id_ = nott();
+                break;
+            }
+        }
+        return id_;
+    }
 
-    typedef parser_gen::terminal_tag tag;
-};
+    void next_token() const
+    {
+        cur++;
+    }
 
-struct A
-{
-    typedef parser_gen::non_terminal_tag tag;
-};
-
-struct B
-{
-    typedef parser_gen::non_terminal_tag tag;
+    std::string const& str;
+    mutable int cur;
+    mutable variant<xorr, nott, id, op, cp, andd, orr, parser_gen::t_eof> id_;
 };
 
 int main()
 {
-    typedef variant<default_int<2>, default_int<3> > SVar;
-    typedef SVar::types vec_res;
 
-    typedef vector<vector<vector<default_int<2>, default_int<2> >,
-                          vector<default_int<2>, default_int<3> >
-                         >,
-                   vector<vector<default_int<3>, default_int<2> >,
-                          vector<default_int<3>, default_int<3> >
-                         > > vec;
+    typedef variant<E, Q, F, N, M, S, P> enterms;
+    typedef variant<xorr, nott, id, op, cp, orr, andd, parser_gen::t_epsilon, parser_gen::t_eof> eterms;
 
-    typedef parser_gen::NonTerminalParserIndexer<typename begin<vec>::type,
-                                                typename end<vec>::type,
-                                                SVar,
-                                                vec_res,
-                                                vec_res> parser;
-    parser p;
-    SVar v1 = default_int<2>();
-    SVar v2 = default_int<2>();
-    std::vector<SVar> res = boost::apply_visitor(p, v1, v2);
-    for (int i = 0; i < res.size(); i++)
+    typedef parser_gen::rule<E, vector<F, Q> > r1;
+    typedef parser_gen::rule<Q, vector<xorr, E> > r2;
+    typedef parser_gen::rule<Q, vector<> > r3;
+    typedef parser_gen::rule<F, vector<N, M> > r4;
+    typedef parser_gen::rule<M, vector<orr, F> > r5;
+    typedef parser_gen::rule<M, vector<> > r6;
+    typedef parser_gen::rule<N, vector<S, P> > r7;
+    typedef parser_gen::rule<P, vector<andd, N> > r8;
+    typedef parser_gen::rule<P, vector<> > r9;
+    typedef parser_gen::rule<S, vector<id> > r10;
+    typedef parser_gen::rule<S, vector<op, E, cp> > r11;
+    typedef parser_gen::rule<S, vector<nott, S> > r12;
+    typedef vector<r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12> rules;
+    typedef parser_gen::first<rules, enterms::types>::type efirst;
+    typedef parser_gen::follow<rules, enterms::types, efirst>::type efollow;
+    typedef utils::gen_map_vector<begin<enterms::types>::type, end<enterms::types>::type, efirst, eterms, enterms>
+            efirst_vec_rep_t;
+    efirst efirst_vec;
+    typedef utils::gen_map_vector<begin<enterms::types>::type, end<enterms::types>::type, efollow, eterms, enterms>
+           efollow_vec_rep_t;
+    efollow efollow_vec;
+
+    utils::print_map("first", efirst_vec_rep_t::result());
+    utils::print_map("follow", efollow_vec_rep_t::result());
+    typedef parser_gen::common_types<efirst, efollow, enterms::types, eterms::types, rules> common;
+
+    typedef parser_gen::all_rule_parser<common, r1, lexer>::type parser;
+    std::string str;
+    while (true)
     {
-        std::cout << res[i] << std::endl;
+        std::cin >> str;
+        lexer lex(str);
+        parser parser_inst(lex, fusion::vector<>(), 0);
+        try {
+            parser_inst.result();
+        }
+        catch(int a)
+        {
+            std::cerr << "NO\n";
+        }
     }
-
-    typedef vector<A, B> nterms;
-    typedef parser_gen::Rule<A, vector<A, default_int<1> > > rule1;
-    parser_gen::First<vector<rule1>, nterms> pg;
 }
