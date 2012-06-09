@@ -66,7 +66,7 @@ struct rule_first_iterate
     struct apply
     {
         typedef typename get_first<Fst, typename begin<typename Rule::right>::type,
-                                       typename end<typename Rule::right>::type>::type add_first;
+                                        typename end<typename Rule::right>::type>::type add_first;
         typedef typename at<Fst, typename Rule::left>::type term_set;
         typedef typename utils::merge_sets<term_set, add_first>::type new_first;
         typedef typename insert< Fst, typename pair<typename Rule::left, new_first>::type >::type type;

@@ -121,54 +121,42 @@ struct iterate_while_changes<Map, Rules, Iterator, false, max, max>
     typedef Map type;
 };
 
-template <char Letter>
+template <char Letter, class Inh, class Syn>
 struct letter_nterm
 {
     typedef parser_gen::non_terminal_tag tag;
-    typedef int inh_attr;
-    typedef int syn_attr;
+    typedef Inh inh_attr;
+    typedef Syn syn_attr;
+    letter_nterm(inh_attr syn, syn_attr inh)
+        : syn(syn), inh(inh)
+    {}
+
+    inh_attr inh;
+    syn_attr syn;
 };
 
-template <char Letter>
-std::ostream& operator<<(std::ostream& out, letter_nterm<Letter> const& nt)
+template <char Letter, class Inh, class Syn>
+std::ostream& operator<<(std::ostream& out, letter_nterm<Letter, Inh, Syn> const& nt)
 {
     return out << Letter;
 }
 
-template <char Letter>
+template <char Letter, class Syn>
 struct letter_term
 {
     typedef parser_gen::terminal_tag tag;
-    typedef int inh_attr;
-    typedef int syn_attr;
+    typedef Syn syn_attr;
+    typedef boost::none_t inh_attr;
+
+    letter_term(syn_attr syn = syn_attr())
+        : syn(syn)
+    {}
+
+    syn_attr syn;
 };
 
-template <class Parent, class Siblings, class Me>
-struct no_inh
-{
-    typedef parser_gen::action_tag tag;
-    void operator()(typename Parent::inh_attr const& inh,
-                    typename fusion::result_of::as_vector<Siblings>::type const& siblings,
-                    typename Me::inh_attr& out) const
-    {
-
-    }
-};
-
-template <class Childern, class Me>
-struct no_syn
-{
-    typedef parser_gen::action_tag tag;
-    void operator()(typename Me::inh_attr const& in,
-                    typename fusion::result_of::as_vector<Childern>::type const& children,
-                    typename Me::syn_attr& out) const
-    {
-
-    }
-};
-
-template <char Letter>
-std::ostream& operator<<(std::ostream& out, letter_term<Letter> const& nt)
+template <char Letter, class Syn>
+std::ostream& operator<<(std::ostream& out, letter_term<Letter, Syn> const& nt)
 {
     return out << Letter;
 }

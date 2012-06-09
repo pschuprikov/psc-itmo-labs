@@ -58,11 +58,32 @@ struct error_parser<SEnd, SEnd, Res>
     }
 };
 
+template <class State, class Functor>
+struct functor_dispatcher
+{
+    typedef Functor type;
+};
+
+template <class State>
+struct functor_dispatcher<State, boost::none_t>
+
+{
+    typedef struct
+    {
+        typedef typename deref<typename State::beg>::type nt;
+        typename nt::inh_attr operator()(typename State::parent::inh_attr const& par, typename State::siblings const& sibs) const
+        {
+            return typename nt::inh_attr();
+        }
+    } type;
+};
+
 template<class Common, class State>
 struct non_terminal_parser
 {
     typedef typename deref<typename State::beg>::type nt;
     typedef typename std::pair<typename nt::inh_attr, typename nt::syn_attr> result_type;
+    typedef typename functor_dispatcher<State, typename State::functor>::type functor_type;
 
     template<class RI>
     struct get_transition_symbs
@@ -101,11 +122,14 @@ struct non_terminal_parser
 
         result_type operator()(typename deref<SBeg>::type & term) const
         {
-            return cur_rule_parser(lex, fusion::vector<>(), 1).result();
+            return cur_rule_parser(lex, fusion::vector<>(), functor(inh_parent, sibs)).result();
         }
 
         using base::operator();
         using base::lex;
+        using base::sibs;
+        using base::inh_parent;
+        using base::functor;
     };
 
     template<class SEnd, class RBeg, class REnd, class Left>
@@ -122,6 +146,9 @@ struct non_terminal_parser
 
         using base::operator();
         using base::lex;
+        using base::sibs;
+        using base::inh_parent;
+        using base::functor;
     };
 
     template<class RBeg, class REnd, class Left>
@@ -143,6 +170,9 @@ struct non_terminal_parser
 
         using base::operator();
         using base::lex;
+        using base::sibs;
+        using base::inh_parent;
+        using base::functor;
     };
 
     template<class REnd, class Left>
@@ -159,6 +189,7 @@ struct non_terminal_parser
 
         typename State::lexer const& lex;
         typename State::siblings sibs;
+        functor_type functor;
         typename State::parent::inh_attr const& inh_parent;
     };
 
@@ -220,9 +251,30 @@ struct choose_parser<Common, State, terminal_tag>
     typedef typename terminal_parser<Common, State>::type type;
 };
 
+template<class State, class Functor>
+struct finish_functor_dispatcher
+{
+    typedef Functor type;
+};
+
+template<class State>
+struct finish_functor_dispatcher<State, boost::none_t>
+{
+    typedef struct default_functor
+    {
+        typename State::parent::syn_attr operator()(typename State::parent::inh_attr const& me,
+                                                    typename State::siblings children) const
+        {
+            return typename State::parent::syn_attr();
+        }
+    } type;
+};
+
 template<class Common, class State>
 struct rule_finish
 {
+
+
     rule_finish(typename State::lexer const& lex,
                 typename State::siblings children,
                 typename State::parent::inh_attr const& me)
@@ -233,9 +285,10 @@ struct rule_finish
 
     result_type result()
     {
-        return result_type();
+        return result_type(me, functor(me, children));
     }
 
+    typename finish_functor_dispatcher< State, typename State::functor >::type functor;
     typename State::lexer const& lex;
     typename State::siblings children;
     typename State::parent::inh_attr const& me;
@@ -243,62 +296,41 @@ struct rule_finish
 
 template<class Common, class State> struct gen_rule_parser;
 
-template<class Common, class State, class Sibs, class RiBeg, class RiEnd>
-struct gen_rule_sentinel
-{
-    typedef parser_gen_state<typename State::parent,
-                             Sibs,
-                             typename next<RiBeg>::type,
-                             RiEnd,
-                             typename State::functor,
-                             typename State::lexer
-                            > new_state;
-    typedef gen_rule_parser<Common, new_state> type;
-};
-
-template<class Common, class State, class Sibs, class RiEnd>
-struct gen_rule_sentinel<Common, State, Sibs, RiEnd, RiEnd>
-{
-    typedef parser_gen_state<typename State::parent,
-                             Sibs,
-                             RiEnd,
-                             RiEnd,
-                             typename State::functor,
-                             typename State::lexer
-                            > new_state;
-    typedef rule_finish<Common, new_state> type;
-};
-
-template<class Common, class State, class types>
-struct choose_gen_rule_parser
+template<class Common, class State, class tag>
+struct gen_rule_parser_dispatcher
 {
     typedef gen_rule_parser<Common, State> type;
 };
 
+template<class Common, class State, class RiBeg, class RiEnd>
+struct gen_rule_sentinel;
+
 template<class Common, class State>
-struct choose_gen_rule_parser<Common, State, vector<> >
+struct gen_rule_parser_dispatcher<Common, State, action_tag>
 {
-    struct epsilon_parser
-    {
-        epsilon_parser(typename State::lexer const& lex,
-                        typename State::siblings sibs,
-                        typename State::parent::inh_attr const& inh_parent)
-            : lex(lex), sibs(sibs), inh_parent(inh_parent)
-        {}
+    typedef parser_gen_state<typename State::parent,
+                             typename State::siblings,
+                             typename next<typename State::beg>::type,
+                             typename State::end,
+                             typename deref<typename State::beg>::type,
+                             typename State::lexer
+                            > new_state;
+    typedef typename gen_rule_sentinel<Common, new_state, typename new_state::beg,
+        typename new_state::end>::type type;
+};
 
-        typedef std::pair<typename State::parent::inh_attr, typename State::parent::syn_attr> result_type;
 
-        result_type result()
-        {
-            return std::make_pair(inh_parent, 0);
-        }
 
-        typename State::lexer const& lex;
-        typename State::siblings sibs;
-        typename State::parent::inh_attr const& inh_parent;
-    };
+template<class Common, class State, class RiBeg, class RiEnd>
+struct gen_rule_sentinel
+{
+    typedef typename gen_rule_parser_dispatcher<Common, State, typename deref<RiBeg>::type::tag>::type type;
+};
 
-    typedef epsilon_parser type;
+template<class Common, class State, class RiEnd>
+struct gen_rule_sentinel<Common, State, RiEnd, RiEnd>
+{
+    typedef rule_finish<Common, State> type;
 };
 
 template<class Common, class State>
@@ -308,7 +340,9 @@ struct gen_rule_parser
         typename deref<typename State::beg>::type::tag>::type node_parser;
     typedef typename fusion::result_of::as_vector<typename fusion::result_of::push_back<typename State::siblings const,
                                                   typename node_parser::result_type const&>::type>::type new_sibs;
-    typedef typename gen_rule_sentinel<Common, State, new_sibs, typename State::beg,
+    typedef parser_gen_state<typename State::parent, new_sibs, typename next<typename State::beg>::type,
+        typename State::end, boost::none_t, typename State::lexer> new_state;
+    typedef typename gen_rule_sentinel<Common, new_state, typename new_state::beg,
         typename State::end>::type next_parser;
 
     gen_rule_parser(typename State::lexer const& lex,
@@ -335,11 +369,12 @@ struct all_rule_parser
     typedef parser_gen_state<typename Rule::left,
                              fusion::vector<>,
                              typename begin<typename Rule::right>::type,
-                             typename begin<typename Rule::right>::type,
+                             typename end<typename Rule::right>::type,
                              boost::none_t,
                              Lexer
                             > state;
-    typedef typename choose_gen_rule_parser<Common, state, typename Rule::right>::type type;
+    typedef typename gen_rule_sentinel<Common, state, typename state::beg,
+        typename state::end>::type type;
 };
 
 }

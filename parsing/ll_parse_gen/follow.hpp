@@ -28,6 +28,12 @@ struct left_rule_follow_iterate_dispatcher<Left, Fst, Follow, non_terminal_tag, 
     typedef typename insert<Follow, typename pair<nt, new_follow>::type>::type type;
 };
 
+template<class Left, class Fst, class Follow, class RBeg, class REnd>
+struct left_rule_follow_iterate_dispatcher<Left, Fst, Follow, action_tag, RBeg, REnd>
+{
+    typedef Follow type;
+};
+
 template <class Left, class Fst, class follow, class RBeg, class REnd>
 struct left_rule_follow_iterate
 {
