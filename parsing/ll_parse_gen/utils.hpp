@@ -127,7 +127,7 @@ struct letter_nterm
     typedef parser_gen::non_terminal_tag tag;
     typedef Inh inh_attr;
     typedef Syn syn_attr;
-    letter_nterm(inh_attr syn, syn_attr inh)
+    letter_nterm(inh_attr inh, syn_attr syn)
         : syn(syn), inh(inh)
     {}
 

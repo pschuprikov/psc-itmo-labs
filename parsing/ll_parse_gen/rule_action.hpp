@@ -82,7 +82,7 @@ template<class Common, class State>
 struct non_terminal_parser
 {
     typedef typename deref<typename State::beg>::type nt;
-    typedef typename std::pair<typename nt::inh_attr, typename nt::syn_attr> result_type;
+    typedef nt result_type;
     typedef typename functor_dispatcher<State, typename State::functor>::type functor_type;
 
     template<class RI>
@@ -120,7 +120,7 @@ struct non_terminal_parser
             : base(lex, sibs, inh_parent)
         {}
 
-        result_type operator()(typename deref<SBeg>::type & term) const
+        result_type operator()(typename deref<SBeg>::type &) const
         {
             return cur_rule_parser(lex, fusion::vector<>(), functor(inh_parent, sibs)).result();
         }
@@ -188,7 +188,7 @@ struct non_terminal_parser
         {}
 
         typename State::lexer const& lex;
-        typename State::siblings sibs;
+        typename State::siblings const& sibs;
         functor_type functor;
         typename State::parent::inh_attr const& inh_parent;
     };
@@ -204,7 +204,7 @@ template<class Common, class State>
 struct terminal_parser
 {
     typedef typename deref<typename State::beg>::type term;
-    typedef typename std::pair<typename term::inh_attr, typename term::syn_attr> result_type;
+    typedef term result_type;
     typedef typename remove<typename Common::clear_ts, term>::type left;
 
     struct parser
@@ -218,19 +218,16 @@ struct terminal_parser
         parser(typename State::lexer const& lex,
                typename State::siblings const& sibs,
                typename State::parent::inh_attr const& inh_parent)
-            : lex(lex), sibs(sibs), inh_parent(inh_parent)
+            : lex(lex)
         {}
 
         result_type operator()(term & t) const
         {
             lex.next_token();
-            return result_type();
+            return t;
         }
 
-        term term_;
         typename State::lexer const& lex;
-        typename State::siblings sibs;
-        typename State::parent::inh_attr const& inh_parent;
     };
 
     typedef parser type;
@@ -263,7 +260,7 @@ struct finish_functor_dispatcher<State, boost::none_t>
     typedef struct default_functor
     {
         typename State::parent::syn_attr operator()(typename State::parent::inh_attr const& me,
-                                                    typename State::siblings children) const
+                                                    typename State::siblings const& children) const
         {
             return typename State::parent::syn_attr();
         }
@@ -276,12 +273,12 @@ struct rule_finish
 
 
     rule_finish(typename State::lexer const& lex,
-                typename State::siblings children,
+                typename State::siblings const& children,
                 typename State::parent::inh_attr const& me)
         : lex(lex), children(children), me(me)
     {}
 
-    typedef std::pair<typename State::parent::inh_attr, typename State::parent::syn_attr> result_type;
+    typedef typename State::parent result_type;
 
     result_type result()
     {
@@ -290,7 +287,7 @@ struct rule_finish
 
     typename finish_functor_dispatcher< State, typename State::functor >::type functor;
     typename State::lexer const& lex;
-    typename State::siblings children;
+    typename State::siblings const& children;
     typename State::parent::inh_attr const& me;
 };
 
@@ -339,27 +336,27 @@ struct gen_rule_parser
     typedef typename choose_parser<Common, State,
         typename deref<typename State::beg>::type::tag>::type node_parser;
     typedef typename fusion::result_of::as_vector<typename fusion::result_of::push_back<typename State::siblings const,
-                                                  typename node_parser::result_type const&>::type>::type new_sibs;
+                                                  typename node_parser::result_type>::type>::type new_sibs;
     typedef parser_gen_state<typename State::parent, new_sibs, typename next<typename State::beg>::type,
         typename State::end, boost::none_t, typename State::lexer> new_state;
     typedef typename gen_rule_sentinel<Common, new_state, typename new_state::beg,
         typename State::end>::type next_parser;
 
     gen_rule_parser(typename State::lexer const& lex,
-                    typename State::siblings sibs,
+                    typename State::siblings const& sibs,
                     typename State::parent::inh_attr const& inh_parent)
         : lex(lex), sibs(sibs), inh_parent(inh_parent)
     {}
 
-    typedef std::pair<typename State::parent::inh_attr, typename State::parent::syn_attr> result_type;
+    typedef typename State::parent result_type;
     result_type result()
     {
         typename node_parser::result_type res = boost::apply_visitor(node_parser(lex, sibs, inh_parent), lex.cur_token());
-        return next_parser(lex, fusion::as_vector(fusion::push_back(sibs, cref(res))), inh_parent).result();
+        return next_parser(lex, fusion::as_vector(fusion::push_back(sibs, res)), inh_parent).result();
     }
 
     typename State::lexer const& lex;
-    typename State::siblings sibs;
+    typename State::siblings const& sibs;
     typename State::parent::inh_attr const& inh_parent;
 };
 

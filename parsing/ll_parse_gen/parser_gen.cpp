@@ -8,7 +8,6 @@
 #include <string>
 
 #include "parser_gen.hpp"
-#include "rule_action.hpp"
 
 using namespace boost;
 using boost::variant;
@@ -87,11 +86,6 @@ struct lexer
     mutable variant<xorr, nott, id, op, cp, andd, orr, parser_gen::t_eof> id_;
 };
 
-struct ololo
-{
-    typedef parser_gen::action_tag tag;
-};
-
 struct FunctorBegin
 {
     typedef parser_gen::action_tag tag;
@@ -105,7 +99,7 @@ struct FunctorBegin
 struct FunctorMiddle
 {
     typedef parser_gen::action_tag tag;
-    M::inh_attr operator()(F::inh_attr const& parent, fusion::vector<std::pair<N::inh_attr, N::syn_attr> >) const
+    M::inh_attr operator()(F::inh_attr const& parent, fusion::vector<N>) const
     {
         std::cerr << "functor middle says hi\n";
         return M::inh_attr();
@@ -115,8 +109,7 @@ struct FunctorMiddle
 struct FunctorEnd
 {
     typedef parser_gen::action_tag tag;
-    F::syn_attr operator()(F::inh_attr const& parent, fusion::vector<std::pair<N::inh_attr, N::syn_attr>,
-                                                                     std::pair<M::inh_attr, M::syn_attr> >) const
+    F::syn_attr operator()(F::inh_attr const& parent, fusion::vector<N, M>) const
     {
         std::cerr << "functor end says hi\n";
         return F::inh_attr();
@@ -126,21 +119,18 @@ struct FunctorEnd
 struct DepthCounter
 {
     typedef parser_gen::action_tag tag;
-    F::syn_attr operator()(F::inh_attr const&, fusion::vector<std::pair<op::inh_attr, op::syn_attr>,
-                                                              std::pair<F::inh_attr, F::syn_attr>,
-                                                              std::pair<cp::inh_attr, cp::syn_attr>,
-                                                              std::pair<F::inh_attr, F::syn_attr> > children )
+    F::syn_attr operator()(F::inh_attr const&, fusion::vector<op, F, cp, F> const& children )
     {
-        return std::max(fusion::at_c<1>(children).second + 1, fusion::at_c<3>(children).second);
+        return std::max(fusion::at_c<1>(children).syn + 1, fusion::at_c<3>(children).syn);
     }
 };
 
 struct FinishCounter
 {
     typedef parser_gen::action_tag tag;
-    E::syn_attr operator()(E::inh_attr const&, fusion::vector<std::pair<F::inh_attr, F::syn_attr> > children )
+    E::syn_attr operator()(E::inh_attr const&, fusion::vector<F> const& children )
     {
-        return fusion::at_c<0>(children).second;
+        return fusion::at_c<0>(children).syn;
     }
 };
 
@@ -179,7 +169,6 @@ int main()
 
     typedef parser_gen::all_rule_parser<rcommon, rr1, lexer>::type rparser;
 
-
     std::string str;
     while (true)
     {
@@ -187,8 +176,8 @@ int main()
         lexer lex(str);
         rparser parser_inst(lex, fusion::vector<>(), 0);
         try {
-            std::pair<E::inh_attr, E::syn_attr> res = parser_inst.result();
-            std::cout << res.second << std::endl;
+            E res = parser_inst.result();
+            std::cout << res.syn << std::endl;
         }
         catch(int a)
         {
