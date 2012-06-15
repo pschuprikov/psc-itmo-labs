@@ -1,6 +1,12 @@
 #ifndef PARSER_GEN_H
 #define PARSER_GEN_H
 
+#include <boost/mpl/front.hpp>
+#include <boost/variant.hpp>
+#include <boost/mpl/vector.hpp>
+#include <boost/fusion/container.hpp>
+#include <exception>
+
 #include "utils.hpp"
 #include "first.hpp"
 #include "follow.hpp"
@@ -8,6 +14,9 @@
 
 namespace parser_gen
 {
+
+using namespace boost::mpl;
+using namespace boost;
 
 template<class NT>
 struct create_start_rule
@@ -27,7 +36,8 @@ struct create_start_rule
 
     struct dummy_functor_finish
     {
-        typename dummy::syn_attr operator()(typename dummy::inh_attr const& me, fusion::vector<NT> const& start)
+        typedef action_tag tag;
+        typename dummy::syn_attr operator()(typename dummy::inh_attr const& me, fusion::vector<NT> const& start) const
         {
             return fusion::at_c<0>(start);
         }
@@ -35,24 +45,32 @@ struct create_start_rule
 
     struct dummy_functor_start
     {
-        typename NT::inh_attr operator()(typename dummy::inh_attr const& me, fusion::vector<> const& start)
+        typedef action_tag tag;
+        typename NT::inh_attr operator()(typename dummy::inh_attr const& me, fusion::vector<> const& start) const
         {
             return me;
         }
     };
 
-    typedef parser_gen::rule<dummy_functor_start, vector<dummy_functor_start, dummy, dummy_functor_finish> > type;
+    typedef parser_gen::rule<dummy, vector<dummy_functor_start, NT, dummy_functor_finish> > type;
+};
+
+template<class TS>
+struct get_lexer_var
+{
+    typedef typename make_variant_over<typename push_back<TS, parser_gen::t_eof>::type>::type type;
 };
 
 template<class Rules, class NTS, class TS, class Lexer>
 struct create_parser
 {
-    typedef typename make_variant_over<typename push_back<TS, parser_gen::t_eof>::type>::type lexer_variant;
-    typedef typename make_variant_over<typename push_back<typename lexer_variant::types>::type>::type tvar;
-    typedef typename make_variant_over<TS>::type ntvar;
+    typedef typename get_lexer_var<TS>::type lexer_variant;
+    typedef typename make_variant_over<typename push_back<typename lexer_variant::types, parser_gen::t_epsilon>::type>::type tvar;
     typedef typename front<NTS>::type start_nt;
-    typedef typename create_start_rule<typename front<NTS>::type>::type start_rule;
-    typedef typename push_front<start_rule>::type rules;
+    typedef create_start_rule<start_nt> start_rule_creator;
+    typedef typename start_rule_creator::type start_rule;
+    typedef typename make_variant_over<typename push_back<NTS, typename start_rule_creator::dummy>::type>::type ntvar;
+    typedef typename push_back<Rules, start_rule>::type rules;
     typedef typename parser_gen::first<rules, typename ntvar::types>::type first;
     typedef typename parser_gen::follow<rules, typename ntvar::types, first>::type follow;
     typedef parser_gen::common_types<first, follow, typename ntvar::types, typename tvar::types, rules> common;
@@ -62,7 +80,7 @@ struct create_parser
     {
         start_nt operator()(typename start_nt::inh_attr const& inh, Lexer const& lexer)
         {
-            return parser(lexer, fusion::vector<>(), inh).result().result;
+            return parser_type(lexer, fusion::vector<>(), inh).result().result;
         }
     };
 

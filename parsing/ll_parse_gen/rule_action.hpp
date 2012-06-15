@@ -43,7 +43,7 @@ struct error_parser
 
     Res operator()(typename deref<SBeg>::type & term) const
     {
-        throw 1;
+        throw parse_error("paser failed");
     }
 
     using base::operator();
@@ -71,7 +71,7 @@ struct functor_dispatcher<State, boost::none_t>
     typedef struct
     {
         typedef typename deref<typename State::beg>::type nt;
-        typename nt::inh_attr operator()(typename State::parent::inh_attr const& par, typename State::siblings const& sibs) const
+        typename nt::inh_attr operator()(inh_child<typename State::parent, nt> par, typename State::siblings const& sibs) const
         {
             return typename nt::inh_attr();
         }
@@ -122,7 +122,8 @@ struct non_terminal_parser
 
         result_type operator()(typename deref<SBeg>::type &) const
         {
-            return cur_rule_parser(lex, fusion::vector<>(), functor(inh_parent, sibs)).result();
+            return cur_rule_parser(lex, fusion::vector<>(), functor(
+                                       inh_child<typename State::parent, nt>(inh_parent), sibs)).result();
         }
 
         using base::operator();
@@ -221,7 +222,7 @@ struct terminal_parser
             : lex(lex)
         {}
 
-        result_type operator()(term & t) const
+        result_type operator()(term t) const
         {
             lex.next_token();
             return t;
@@ -259,7 +260,7 @@ struct finish_functor_dispatcher<State, boost::none_t>
 {
     typedef struct default_functor
     {
-        typename State::parent::syn_attr operator()(typename State::parent::inh_attr const& me,
+        typename State::parent::syn_attr operator()(inh<typename State::parent> const& me,
                                                     typename State::siblings const& children) const
         {
             return typename State::parent::syn_attr();
@@ -282,7 +283,7 @@ struct rule_finish
 
     result_type result()
     {
-        return result_type(me, functor(me, children));
+        return result_type(me, functor(inh<typename State::parent>(me), children));
     }
 
     typename finish_functor_dispatcher< State, typename State::functor >::type functor;

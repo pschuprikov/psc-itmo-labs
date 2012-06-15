@@ -1,6 +1,9 @@
 #ifndef COMMON_HPP
 #define COMMON_HPP
 
+#include <exception>
+#include <string>
+
 #include <boost/mpl/insert.hpp>
 #include <boost/mpl/at.hpp>
 #include <boost/mpl/vector.hpp>
@@ -13,6 +16,23 @@
 
 namespace parser_gen
 {
+
+struct parse_error : public std::exception
+{
+    parse_error(std::string const& msg)
+        : msg(msg)
+    {}
+
+    ~parse_error() throw()
+    {}
+
+    char const * what() const throw()
+    {
+        return msg.c_str();
+    }
+
+    std::string msg;
+};
 
 using namespace boost::mpl;
 
@@ -39,6 +59,42 @@ inline std::ostream& operator<<(std::ostream& out, t_eof const& eof)
 {
     return out << "eof";
 }
+
+template<class P>
+struct inh
+{
+    typedef typename P::inh_attr result_type;
+
+    inh(typename P::inh_attr const& attr)
+        : inh_(attr)
+    {}
+
+    operator typename P::inh_attr const& ()
+    {
+        return inh_;
+    }
+
+private:
+    typename P::inh_attr const& inh_;
+};
+
+template<class P, class C>
+struct inh_child
+{
+    typedef typename C::inh_attr result_type;
+
+    inh_child(typename P::inh_attr const& attr)
+        : inh_(attr)
+    {}
+
+    operator typename P::inh_attr const& ()
+    {
+        return inh_;
+    }
+
+private:
+    typename P::inh_attr const& inh_;
+};
 
 template<class Left, class Right>
 struct rule

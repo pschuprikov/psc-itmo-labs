@@ -25,72 +25,6 @@ namespace utils
 using namespace boost;
 using namespace boost::mpl;
 
-template<class TBeg, class TEnd, class TVar>
-struct gen_vector
-{   
-    typedef typename deref<TBeg>::type cur;
-    typedef std::vector<TVar> result_type;
-    typedef gen_vector<typename next<TBeg>::type, TEnd, TVar> next_vec;
-    static result_type const& result()
-    {
-        static result_type vec;
-        static bool initialized = false;
-        if (!initialized)
-        {
-            vec.push_back(cur());
-            std::copy(next_vec::result().begin(), next_vec::result().end(), std::back_inserter(vec));
-            initialized = true;
-        }
-        return vec;
-    }
-};
-
-template<class TEnd, class TVar>
-struct gen_vector<TEnd, TEnd, TVar>
-{
-    typedef std::vector<TVar> result_type;
-    static result_type const& result()
-    {
-        static result_type vec;
-        return vec;
-    }
-};
-
-template <class TBeg, class TEnd, class AS, class TVar, class NTVar>
-struct gen_map_vector
-{
-    typedef std::vector<std::pair<NTVar, std::vector<TVar> > > result_type;
-    typedef typename deref<TBeg>::type cur;
-    typedef typename at<AS, cur>::type cur_set;
-    typedef gen_map_vector<typename next<TBeg>::type, TEnd, AS, TVar, NTVar> next_vec;
-    static result_type const& result()
-    {
-        static result_type vec;
-        static bool initialized = false;
-        if (!initialized)
-        {
-            vec.push_back(std::make_pair(cur(), gen_vector<typename begin<cur_set>::type,
-                                                          typename end<cur_set>::type,
-                                                           TVar>::result()));
-            std::copy(next_vec::result().begin(), next_vec::result().end(), std::back_inserter(vec));
-            initialized = true;
-        }
-        return vec;
-    }
-};
-
-template <class TEnd, class AS, class TVar, class NTVar>
-struct gen_map_vector<TEnd, TEnd, AS, TVar, NTVar>
-{
-    typedef std::vector<std::pair<NTVar, std::vector<TVar> > > result_type;
-    static result_type const& result()
-    {
-        static result_type vec;
-        return vec;
-    }
-};
-
-
 template <class S1, class S2>
 struct merge_sets
 {
@@ -159,21 +93,6 @@ template <char Letter, class Syn>
 std::ostream& operator<<(std::ostream& out, letter_term<Letter, Syn> const& nt)
 {
     return out << Letter;
-}
-
-template<class Map>
-void print_map(std::string const& name, Map const& map)
-{
-    std::cout << name << ":" << std::endl;
-    for (int i = 0; i < map.size(); i++)
-    {
-        std::cout << map[i].first << ": ";
-        for (int j = 0; j < map[i].second.size(); j++)
-        {
-            std::cout << map[i].second[j] << " ";
-        }
-        std::cout << std::endl;
-    }
 }
 
 }
