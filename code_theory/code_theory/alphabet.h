@@ -12,7 +12,7 @@ using namespace std;
 struct alphabet_t
 {
     typedef string::traits_type traits_t;
-    typedef traits_t::int_type int_t;
+    typedef unsigned long long int_t;
 
     alphabet_t(size_t letter_size = 1)
         : letter_size_(letter_size)

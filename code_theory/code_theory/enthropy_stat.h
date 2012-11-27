@@ -10,21 +10,24 @@
 namespace coding
 {
 
-template<class PrIter>
-double enthropy(PrIter first, PrIter beyond)
+double enthropy(probability::probability_provider const& prb)
 {
+    using namespace probability;
     double res = 0;
-    for (; first != beyond; ++first)
+    BOOST_FOREACH(alphabet_t::int_t idx, prb.non_zero())
     {
-        res += *first * (*first == 0 ? 0 : -log2(*first));
+        double pr = prb[idx];
+        res += pr * (pr == 0 ? 0 : -log2(pr));
     }
+
+    res += prb.tail().first * prb.tail().second * (-log2(prb.tail().second));
+
     return res;
 }
 
-template<class PrIter>
-double enthropy_by_letter(PrIter first, PrIter beyond, alphabet_t const& alph)
+double enthropy_by_letter(probability::probability_provider const& prb, alphabet_t const& alph)
 {
-    return enthropy(first, beyond) / alph.letter_size();
+    return enthropy(prb) / alph.letter_size();
 }
 
 }

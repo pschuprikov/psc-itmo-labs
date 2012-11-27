@@ -1,5 +1,26 @@
 processing:
-data: file=0  name=ssdd
+data: file=0  name=30q9jgp98h4w[brsigmf,;lzdfmbln;sfgz'mse,gpaaeb]a\dfb0-43816572851023984@!#$%^&*^!@&$)_@(!*#
 processing:
-entrhropy: letter_size=1 tail=exp by_letter=0
-result: 1
+entrhropy: letter_size=1 tail=exp by_letter=1
+result: 6.5625
+processing:
+entrhropy: letter_size=1 tail=none by_letter=1
+result: -nan
+processing:
+entrhropy: letter_size=2 tail=exp by_letter=1
+result: 0.0206299
+processing:
+entrhropy: letter_size=2 tail=none by_letter=1
+result: -nan
+processing:
+entrhropy: letter_size=3 tail=exp by_letter=1
+result: 7.96318e-05
+processing:
+entrhropy: letter_size=3 tail=none by_letter=1
+result: -nan
+processing:
+entrhropy: letter_size=4 tail=exp by_letter=1
+result: 3.12924e-07
+processing:
+entrhropy: letter_size=4 tail=none by_letter=1
+result: -nan

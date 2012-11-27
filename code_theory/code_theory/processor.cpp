@@ -15,6 +15,7 @@ namespace
 {
 
 using namespace std;
+using namespace probability;
 
 struct cached_string_data
 {
@@ -26,26 +27,29 @@ struct cached_string_data
         , gen_str_(string_slide_iterator(str, alph), string_slide_iterator())
     {}
 
-    vector<double> const& operator[](running_params::probability_type pt) const
+    probability_provider const& operator[](running_params::probability_type pt) const
     {
         if (probs_.find(pt) == probs_.end())
         {
-            probs_[pt] = vector<double>();
             switch (pt)
             {
-            case running_params::PT_NONE : probability::fill_probability(gen_str_.begin(), gen_str_.end(), probs_[pt], alph_, probability::absence_preprocess_no_t());
+            case running_params::PT_NONE : probs_[pt] = probability_provider_ptr(
+                            new probability_provider(gen_str_.begin(), gen_str_.end(), alph_, absence_preprocess_no_t())
+            );
                 break;
-            case running_params::PT_EXP  : probability::fill_probability(gen_str_.begin(), gen_str_.end(), probs_[pt], alph_, probability::absence_preprocess_exp_t());
+            case running_params::PT_EXP  : probs_[pt] = probability_provider_ptr(
+                            new probability_provider(gen_str_.begin(), gen_str_.end(), alph_, absence_preprocess_exp_t())
+                );
                 break;
             }
         }
 
-        return probs_[pt];
+        return *probs_[pt];
     }
 
 private:
     typedef vector<alphabet_t::int_t> general_string_t;
-    typedef map<running_params::probability_type, vector<double> > probs_map_t;
+    typedef map<running_params::probability_type, coding::probability::probability_provider_ptr> probs_map_t;
 
 private:
     alphabet_t alph_;
@@ -92,9 +96,9 @@ struct enthropy_processor
         double res;
 
         if (ei.by_letter)
-            res = enthropy_by_letter(data_[alph][ei.pr_type].begin(), data_[alph][ei.pr_type].end(), alph);
+            res = enthropy_by_letter(data_[alph][ei.pr_type], alph);
         else
-            res = enthropy(data_[alph][ei.pr_type].begin(), data_[alph][ei.pr_type].end());
+            res = enthropy(data_[alph][ei.pr_type]);
 
         out_ << "result: " << res << "\n";
     }

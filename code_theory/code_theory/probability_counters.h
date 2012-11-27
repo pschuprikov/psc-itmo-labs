@@ -1,10 +1,13 @@
 #ifndef PROBABILITY_COUNTERS_H
 #define PROBABILITY_COUNTERS_H
 
-#include <algorithm>
-#include <numeric>
-#include <vector>
+
+#include <map>
 #include <stdexcept>
+#include <vector>
+
+#include <boost/shared_ptr.hpp>
+#include <boost/foreach.hpp>
 
 #include "alphabet.h"
 
@@ -14,58 +17,85 @@ namespace coding
 namespace probability
 {
 
+typedef std::map<alphabet_t::int_t, double> distribution_t;
+
 struct absence_preprocess_exp_t
 {
-    template<class Container>
-    void operator() (Container& probs, alphabet_t const& alph) const
+    double operator()(distribution_t& distr, alphabet_t const& alph) const
     {
-        double total_prob = std::accumulate(probs.begin(), probs.end(), 0.);
-        size_t zeroes = std::count_if(probs.begin(), probs.end(), std::bind1st(std::equal_to<double>(), 0));
+        double total_prob;
+
+        BOOST_FOREACH(distribution_t::value_type const& val, distr)
+        {
+            total_prob += val.second;
+        }
+
+        alphabet_t::int_t zeroes = alph.size() - distr.size();
 
         double zero_prob = 1. / alph.size();
+
         double total_zero_prob = zeroes * zero_prob;
 
         double norm_mult = zeroes != alph.size() ? (1 - total_zero_prob) / total_prob : 1.;
-        for (typename Container::iterator p_it = probs.begin(); p_it != probs.end(); ++p_it)
+
+        BOOST_FOREACH(distribution_t::value_type& val, distr)
         {
-            *p_it == *p_it == 0 ? zero_prob : *p_it * norm_mult;
+            val.second = val.second * norm_mult;
         }
+
+        return zero_prob;
     }
 };
 
 struct absence_preprocess_no_t
 {
-    template<class Container>
-    void operator()(Container& probs, alphabet_t const& alph) const
-    {}
+    double operator()(distribution_t& distr, alphabet_t const& alph) const
+    {
+        return 0;
+    }
 };
 
-typedef std::vector<double> distribution_t;
+typedef vector<alphabet_t::int_t> letter_indicies_t;
 
-
-template<class SeqIter, class Absence>
-void fill_probability(SeqIter first, SeqIter beyond, distribution_t & distr, alphabet_t const& alph, Absence const& absence_pp = absence_preprocess_no_t())
+struct probability_provider
 {
-    if (first == beyond)
-        throw invalid_argument("empty input");
-
-    const int alphabet_size = alph.size();
-
-    vector<size_t> hits(alphabet_size);
-    size_t total = 0;
-    for (; first != beyond; ++first)
+    template<class SeqIter, class Absence>
+    probability_provider(SeqIter first, SeqIter beyond, alphabet_t const& alph, Absence const& absence_pp = absence_preprocess_no_t())
     {
-        total++;
-        hits.at(*first)++;
+        if (first == beyond)
+            throw invalid_argument("empty input");
+
+        const alphabet_t::int_t alphabet_size = alph.size();
+
+        size_t total = 0;
+        for (; first != beyond; ++first)
+        {
+            total++;
+            distr_[*first]++;
+        }
+
+        BOOST_FOREACH(distribution_t::value_type& val, distr_)
+        {
+            val.second /= total;
+        }
+
+        tail_prob_ = absence_pp(distr_, alph);
     }
 
-    distr.assign(hits.begin(), hits.end());
-    std::transform(distr.begin(), distr.end(), distr.begin(), std::bind2nd(std::divides<double>(), total));
-    absence_pp(distr, alph);
-}
+    letter_indicies_t const& non_zero() const { return non_zero_; }
+    double  operator[](alphabet_t::int_t idx) const { return distr_.find(idx) == distr_.end() ? tail_prob_ : distr_.at(idx); }
+    pair<alphabet_t::int_t, double> tail() const { return std::make_pair(alph_.size() - distr_.size(), tail_prob_); }
+
+private:
+    alphabet_t            alph_;
+    letter_indicies_t non_zero_;
+    distribution_t       distr_;
+    double           tail_prob_;
+};
+
+typedef boost::shared_ptr<probability_provider> probability_provider_ptr;
 
 }
 
 }
-
 #endif // PROBABILITY_COUNTERS_H
