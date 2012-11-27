@@ -1,12 +1,12 @@
 #ifndef PROCESSOR_H
 #define PROCESSOR_H
 
-#include "running_params.h"
+#include "config_parser.h"
 
 namespace processing
 {
 
-void process(std::string const& file_name, running_params::runs_info const& runs);
+void process(std::ostream& file_name, running_params::runs_info const& runs);
 
 }
 

@@ -1,8 +1,9 @@
 #ifndef DATA_PROVIDERS_H
 #define DATA_PROVIDERS_H
 
-#include <stdexcept>
 #include <string>
+
+#include <boost/iterator/iterator_facade.hpp>
 
 #include "alphabet.h"
 
@@ -11,12 +12,11 @@ namespace coding
     using std::string;
 
     struct string_slide_iterator
-            : std::iterator<forward_iterator_tag, alphabet_t::int_t>
+            : boost::iterator_facade<string_slide_iterator, alphabet_t::int_t const, boost::forward_traversal_tag>
     {
         string_slide_iterator()
             : str_(), pos_(std::string::npos), cur_elem_(-1), alph_()
-        {
-        }
+        {}
 
         string_slide_iterator(string const& str, alphabet_t const& alph)
             : str_ (str )
@@ -26,26 +26,34 @@ namespace coding
             read_some();
         }
 
-        string_slide_iterator::value_type const& operator*();
-        string_slide_iterator::pointer operator->();
+    private:
+        friend class boost::iterator_core_access;
 
-        string_slide_iterator& operator++();
-        string_slide_iterator const operator++(int);
+        void increment()
+        {
+            if (pos_ != string::npos)
+            {
+                pos_ = pos_ + alph_.letter_size() < str_.length() ? pos_ + 1 : string::npos;
+            }
 
-        bool operator==(string_slide_iterator const& rhs)
+            read_some();
+        }
+
+        bool equal(string_slide_iterator const& rhs) const
         {
             if (rhs.pos_ != -1 && pos_ != -1 && rhs.alph_ != alph_)
                 throw std::invalid_argument("incompatible string slide step");
             return pos_ == rhs.pos_;
         }
 
-        bool operator!=(string_slide_iterator const& rhs)
-        {
-            return !(*this == rhs);
-        }
+        string_slide_iterator::reference dereference() const { return cur_elem_; }
 
-    private:
-        void read_some();
+        void read_some()
+        {
+            if (pos_ == std::string::npos)
+                return;
+            cur_elem_ = alph_[str_.substr(pos_, alph_.letter_size())];
+        }
 
     private:
 
@@ -56,8 +64,6 @@ namespace coding
 
         alphabet_t alph_;
     };
-
-    string_slide_iterator string_slide_from_file(string const& file_name, alphabet_t const& alph);
 }
 
 #endif // DATA_PROVIDERS_H

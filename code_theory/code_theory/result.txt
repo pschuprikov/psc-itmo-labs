@@ -1,0 +1,5 @@
+processing:
+data: file=0  name=ssdd
+processing:
+entrhropy: letter_size=1 tail=exp by_letter=0
+result: 1

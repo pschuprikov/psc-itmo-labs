@@ -5,6 +5,10 @@
 #include <string>
 #include <vector>
 
+#include <boost/optional.hpp>
+
+using boost::optional;
+
 namespace running_params
 {
     struct data_info
@@ -35,7 +39,7 @@ namespace running_params
 
     typedef std::vector<run_info> runs_info;
 
-    runs_info parse_config(std::string const& file_name);
+    optional<runs_info> parse_config(std::string const& file_name);
 }
 
 #endif // RUNNING_PARAMS_H

@@ -6,7 +6,7 @@
 #include <vector>
 #include <stdexcept>
 
-#include "stat_common.h"
+#include "alphabet.h"
 
 namespace coding
 {
@@ -43,8 +43,8 @@ struct absence_preprocess_no_t
 typedef std::vector<double> distribution_t;
 
 
-template<class Iter, class Absence>
-void fill_probability(Iter first, Iter beyond, distribution_t & distr, alphabet_t const& alph, Absence const& absence_pp = absence_preprocess_no_t())
+template<class SeqIter, class Absence>
+void fill_probability(SeqIter first, SeqIter beyond, distribution_t & distr, alphabet_t const& alph, Absence const& absence_pp = absence_preprocess_no_t())
 {
     if (first == beyond)
         throw invalid_argument("empty input");

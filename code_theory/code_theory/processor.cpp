@@ -118,7 +118,7 @@ struct run_processor
         std::string str;
         if(run_info.data.file)
         {
-            ifstream ist(run_info.data.name.c_str());
+            ifstream ist(run_info.data.name.c_str(), ios_base::binary);
             ist.seekg(0, ios_base::end);
             size_t const len = ist.tellg();
 
@@ -144,8 +144,7 @@ private:
 
 }
 
-void processing::process(std::string const& file_name, running_params::runs_info const& runs)
+void processing::process(std::ostream& out, running_params::runs_info const& runs)
 {
-    std::ofstream out_st(file_name.c_str());
-    std::for_each(runs.begin(), runs.end(), processing::run_processor(out_st));
+    std::for_each(runs.begin(), runs.end(), processing::run_processor(out));
 }

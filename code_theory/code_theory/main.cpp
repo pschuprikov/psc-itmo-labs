@@ -1,23 +1,47 @@
-#include <iostream>
-#include "running_params.h"
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
+
+#include "utils.h"
+#include "config_parser.h"
 #include "processor.h"
 
 using namespace std;
 
-int main()
+int main(int argc, char const * argv[])
 {
-    string params_test = "run {                     "
+    string config;
+    boost::filesystem::path working_dir = "./";
+
+    if (argc > 1)
+    {
+        working_dir = argv[1];
+        boost::filesystem::path config_path = working_dir / "process.cfg";
+        config = utils::read_file(config_path);
+    }
+    else
+    {
+           config =      "run {                     "
                          "    data {                "
-                         "        file \"/home/pasha/code_teory/CALGARY/PROGP\" "
+                         "        raw \"abcdefgh\" "
                          "    }                     "
                          "                          "
                          "    enthropy {            "
-                         "          2 none usual    "
+                         "        1 none usual      "
                          "    }                     "
                          "}                         ";
+    }
 
-    running_params::runs_info info = running_params::parse_config(params_test);
-    processing::process("result.txt", info);
+
+    optional<running_params::runs_info> info = running_params::parse_config(config);
+
+    if (!info)
+        std::cerr << "Parse error\n exitting...\n";
+    else
+    {
+        boost::filesystem::path save_path = working_dir / "result.txt";
+        boost::filesystem::ofstream ost(save_path);
+        processing::process(ost, *info);
+    }
 
     return 0;
 }
