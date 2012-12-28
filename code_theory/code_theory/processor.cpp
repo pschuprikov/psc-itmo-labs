@@ -4,7 +4,8 @@
 
 #include "processor.h"
 #include "enthropy_stat.h"
-#include "data_providers.h"
+#include "slide_iterator.h"
+#include "utils.h"
 
 namespace processing
 {
@@ -89,7 +90,6 @@ struct enthropy_processor
 
     void operator()(running_params::enthropy_info const& ei) const
     {
-        out_ << "processing:\n";
         out_ << ei << "\n";
 
         alphabet_t alph(ei.letter_size);
@@ -122,14 +122,15 @@ struct run_processor
         std::string str;
         if(run_info.data.file)
         {
-            ifstream ist(run_info.data.name.c_str(), ios_base::binary);
-            ist.seekg(0, ios_base::end);
-            size_t const len = ist.tellg();
-
-            vector<char> buffer(len);
-            ist.seekg(0, ios_base::beg);
-            ist.read(&buffer[0], len);
-            str.assign(buffer.begin(), buffer.end());
+            try
+            {
+                str = utils::read_file(run_info.data.name, ios_base::binary);
+            }
+            catch (boost::system::system_error & err)
+            {
+                out_ << "can't read file: " << err.what() << "\n";
+                return;
+            }
         }
         else
         {

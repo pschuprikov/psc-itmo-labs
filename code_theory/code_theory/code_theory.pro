@@ -7,16 +7,18 @@ SOURCES += main.cpp \
     processor.cpp \
     utils.cpp \
     alphabet.cpp \
-    config_parser.cpp
+    config_parser.cpp \
+    probability_counters.cpp \
+    enthropy_stat.cpp
 
 HEADERS += \
     probability_counters.h \
     alphabet.h \
-    data_providers.h \
     enthropy_stat.h \
     processor.h \
     utils.h \
-    config_parser.h
+    config_parser.h \
+    slide_iterator.h
 
 LIBS += -lboost_system -lboost_filesystem
 

@@ -21,30 +21,7 @@ typedef std::map<alphabet_t::int_t, double> distribution_t;
 
 struct absence_preprocess_exp_t
 {
-    double operator()(distribution_t& distr, alphabet_t const& alph) const
-    {
-        double total_prob;
-
-        BOOST_FOREACH(distribution_t::value_type const& val, distr)
-        {
-            total_prob += val.second;
-        }
-
-        alphabet_t::int_t zeroes = alph.size() - distr.size();
-
-        double zero_prob = 1. / alph.size();
-
-        double total_zero_prob = zeroes * zero_prob;
-
-        double norm_mult = zeroes != alph.size() ? (1 - total_zero_prob) / total_prob : 1.;
-
-        BOOST_FOREACH(distribution_t::value_type& val, distr)
-        {
-            val.second = val.second * norm_mult;
-        }
-
-        return zero_prob;
-    }
+    double operator()(distribution_t& distr, alphabet_t const& alph) const;
 };
 
 struct absence_preprocess_no_t
@@ -77,6 +54,7 @@ struct probability_provider
         BOOST_FOREACH(distribution_t::value_type& val, distr_)
         {
             val.second /= total;
+            non_zero_.push_back(val.first);
         }
 
         tail_prob_ = absence_pp(distr_, alph);
