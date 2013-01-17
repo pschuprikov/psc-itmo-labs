@@ -8,5 +8,6 @@ drop table if exists research_tasks cascade;
 drop table if exists research_asignees cascade;
 drop table if exists research_task_documents cascade;
 drop table if exists comments cascade;
+drop table if exists comments_datas;
 
 drop type priority;

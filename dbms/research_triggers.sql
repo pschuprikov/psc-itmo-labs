@@ -25,6 +25,9 @@ begin
     if exists (select * from alive_research_groups where
         title = NEW.title) then
         raise 'there alredy exists an alive group %', NEW.title;
+    else if exists (select * from alive_research_groups where
+        hist_rg_id = NEW.hist_rg_id) then
+        raise 'the history is done for %', NEW.title;
     else
         return NEW;
     end if;
@@ -36,6 +39,9 @@ begin
     if exists (select * from alive_research_lines where
         title = NEW.title) then
         raise 'there alredy exists an alive line %', NEW.title;
+    else if exists (select * from alive_research_lines where
+        his_rl_id = NEW.hist_rl_id) then
+        raise 'the history is done for line %', NEW.title;
     else
         return NEW;
     end if;
@@ -51,10 +57,10 @@ create trigger on_line_update after update on research_lines
 for each row execute procedure check_line_valid_close();
 
 drop trigger if exists on_group_insert on research_groups;
-create trigger on_group_insert before insert on research_groups
+create trigger on_group_insert before insert or update on research_groups
 for each row execute procedure check_only_group_title();
 
 drop trigger if exists on_line_insert on research_lines;
-create trigger on_line_insert before insert on research_lines
+create trigger on_line_insert before insert or update on research_lines
 for each row execute procedure check_only_line_title();
 

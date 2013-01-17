@@ -33,9 +33,12 @@ on research_task_documents execute procedure check_valid_task();
 create or replace function attach_document(in_title text, in_ttitle text,
     in_ltitle text, in_gtitle text, in_reason text) returns void as $$
 begin
-    insert into research_task_documents (reason, rt_id,  d_id) values
-        (in_reason, find_alive_task(in_ttitle, in_ltitle, in_gtitle),
-            find_document(in_title));
+    with rt as (select * from research_tasks 
+        where rt_id = find_alive_task(in_ttitle, in_ltitle, in_gtitle))
+    insert into research_task_documents 
+        (reason, rt_id, rl_id, rg_id, d_id) values
+        (in_reason, (select rt_id from rt), (select rl_id from rt),
+         (select rg_id from rt), find_document(in_title));
 end;
 $$ language plpgsql;
 
