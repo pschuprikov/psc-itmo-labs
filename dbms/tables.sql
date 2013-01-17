@@ -8,6 +8,7 @@ create table documents (
 );
 insert into documents (d_id, title, authors, year) values
     (0, 'Unknown', 'Unknown', 0);
+create index on documents using hash (title);
 
 create table researchers (
     r_id serial primary key,
@@ -20,6 +21,7 @@ create table researchers (
 );
 insert into researchers (r_id, fname, lname) values
     (0, 'Unknown', 'Unknown');
+create index on researchers using hash (lname);
 
 create table research_groups (
     rg_id serial primary key,
@@ -28,6 +30,9 @@ create table research_groups (
     closed date,
     mr_id int not null
 );
+create index on research_groups (opened, closed) where closed is not null;
+create index on research_groups using hash (title);
+create index on research_groups (rg_id) where closed is null;
 
 create table research_group_memberships (
     role text not null,
@@ -50,6 +55,9 @@ create table research_lines(
     primary key (rl_id, rg_id),
     foreign key (rg_id) references research_groups (rg_id)
 );
+create index on research_lines (opened, closed) where closed is not null;
+create index on research_lines using hash (title);
+create index on research_lines (rl_id) where close is null;
 
 create table research_line_memberships (
     role text not null,
