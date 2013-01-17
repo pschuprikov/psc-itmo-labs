@@ -1,9 +1,9 @@
 create table documents (
     d_id serial primary key,
-    title text not null,
+    title varchar(500) not null,
     authors text not null,
     year int not null,
-    url text,
+    url varchar(1000),
     abstract text
 );
 insert into documents (d_id, title, authors, year) values
@@ -13,9 +13,9 @@ create table researchers (
     r_id serial primary key,
     fname varchar(300) not null,
     lname varchar(300) not null,
-    degree varchar(300),
-    title varchar(300),
-    university varchar(1000),
+    degree varchar(100),
+    title varchar(500),
+    university varchar(300),
     about text
 );
 insert into researchers (r_id, fname, lname) values
@@ -41,7 +41,7 @@ alter table research_groups add foreign key(rg_id, mr_id)
 
 create table research_lines(
     rl_id serial unique,
-    title varchar(200) not null,
+    title varchar(500) not null,
     opened date not null,
     closed date,
     rg_id int not null, 
@@ -72,7 +72,7 @@ create table research_tasks (
     rl_id int not null, 
     rg_id int not null,
     task text not null,
-    title varchar(200) not null,
+    title varchar(500) not null,
     prio priority not null default 'normal',
     resolved date,
 
@@ -107,6 +107,7 @@ create table research_task_documents (
     rg_id int not null,
     d_id int not null default 0,
 
+    primary key (rt_id, rl_id, rg_id, d_id),
     foreign key (rt_id, rl_id, rg_id) references research_tasks,
     foreign key (d_id) references documents (d_id)
         on delete set default

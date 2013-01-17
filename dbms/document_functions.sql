@@ -11,7 +11,7 @@ create or replace function find_document(in_title text)
 declare
     cur_d_id int;
 begin
-    select d_id into strict cur_d_id from documents where title = in_title;
+    select d_id into cur_d_id from documents where title = in_title;
     return cur_d_id;
 end;
 $$ language plpgsql;

@@ -25,9 +25,6 @@ begin
     if exists (select * from alive_research_groups where
         title = NEW.title) then
         raise 'there alredy exists an alive group %', NEW.title;
-    else if exists (select * from alive_research_groups where
-        hist_rg_id = NEW.hist_rg_id) then
-        raise 'the history is done for %', NEW.title;
     else
         return NEW;
     end if;
@@ -39,9 +36,6 @@ begin
     if exists (select * from alive_research_lines where
         title = NEW.title) then
         raise 'there alredy exists an alive line %', NEW.title;
-    else if exists (select * from alive_research_lines where
-        his_rl_id = NEW.hist_rl_id) then
-        raise 'the history is done for line %', NEW.title;
     else
         return NEW;
     end if;
