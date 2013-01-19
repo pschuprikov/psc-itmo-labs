@@ -37,12 +37,22 @@ insert into time_units (id, lasting, name) values
     (0, interval '1 month', 'month'),
     (1, interval '1 day'  , 'day'  );
 
-insert into contracts (id, room_id, place_id, student_id, unit_id, 
-                       signed, lasting, price) values 
-    (0, 454, 0, 0, 0, date '2012-12-12', 6, '500.0'),
-    (1, 454, 1, 1, 0, date '2012-12-21', 6, '2500.0'),
-    (2, 462, 0, 2, 0, date '2012-2-20' , 4, '500.0'),
-    (3, 462, 1, 3, 0, date '2012-10-10', 4, '2500.0');
+insert into pricings (id, unit_id, start_price) values
+    (0, 0, '500.0'),
+    (1, 0, '2500.0');
+
+insert into price_changes(id, pricing_id, price, ts) values
+    (0, 0, '300.0', timestamp '2013-1-12'),
+    (1, 0, '400.0', timestamp '2013-1-13'),
+    (2, 0, '600.0', timestamp '2013-1-14'),
+    (0, 1, '400.0', timestamp '2013-1-12');
+
+insert into contracts (id, room_id, place_id, student_id, pricing_id, 
+                       signed, lasting) values 
+    (0, 454, 0, 0, 0, date '2012-12-12', 6),
+    (1, 454, 1, 1, 1, date '2012-12-21', 6),
+    (2, 462, 0, 2, 0, date '2012-2-20' , 4),
+    (3, 462, 1, 3, 1, date '2012-10-10', 4);
 
 insert into payments (id, contract_id, amount) values
     (0, 0, '300.0' ),

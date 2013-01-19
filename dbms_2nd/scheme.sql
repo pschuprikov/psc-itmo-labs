@@ -64,6 +64,23 @@ create table if not exists time_units (
     lasting interval        not null
 );
 
+create table if not exists pricings (
+    id              int         primary key,
+
+    unit_id         int         not null references time_units,
+    start_price     money       not null check (start_price >= '0.0')
+);
+
+create table if not exists price_changes (
+    id          int         not null,
+    ts          timestamp   not null default now(),
+    pricing_id  int         not null references pricings,
+    primary key (pricing_id, id),
+    unique (pricing_id, ts),
+
+    price       money       not null check (price >= '0.0')
+);
+
 create table if not exists contracts (
     id          int         primary key,
 
@@ -74,10 +91,9 @@ create table if not exists contracts (
     foreign key (room_id, place_id) references places,
     unique      (room_id, place_id),
 
-    unit_id     int         not null references time_units,
     signed      date        not null,
     lasting     int         not null check (lasting > 0),
-    price       money       not null check (price >= '0.0')
+    pricing_id  int         not null references pricings
 );
 create index on contracts (student_id);
 create index on contracts (room_id);
