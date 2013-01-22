@@ -1,4 +1,4 @@
-global gK  =         1.6e6; % 1 / sec
+global gK  =      0; % 1600000; % 1 / sec
 global gE  =           8e4; % J / mol
 global gR  =         8.314; % J / mol * kg
 global gQ  =           7e5; % J / kg
