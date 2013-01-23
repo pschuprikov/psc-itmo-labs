@@ -4,7 +4,7 @@ function run1Dviewer(CS, TS, step)
 
     cur = 1;
     while true
-        plot([TS(:,cur) - gT0]);
+        plot([CS(:,cur)]);
         [x, y, b] = ginput(1);
         if b == '-'
             cur = max([cur - step, 1]);
