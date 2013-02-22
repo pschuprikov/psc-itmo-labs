@@ -1,5 +1,5 @@
-function [C, T] = operators1D(a, b, n, dt)
-    constants;
+function [C, T] = operators1D(a, b, n, dt, constants)
+    constants();
 
     dz = (b - a) / (n - 1);
     col = ones(n, 1);

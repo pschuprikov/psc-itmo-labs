@@ -1,5 +1,5 @@
-function [c, t] = initial1D(n, Tign)
-    constants;
+function [c, t] = initial1D(n, Tign, constants)
+    constants();
 
     c = ones(n, 1);
     c(1)= 0;
