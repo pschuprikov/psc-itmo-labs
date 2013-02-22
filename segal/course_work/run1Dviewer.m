@@ -1,17 +1,12 @@
-function run1Dviewer(CS, TS, step)
+function run1Dviewer(c, t, dostep, constants)
     constants;
-    total_steps = size(CS, 2);
 
-    cur = 1;
-    while true
-        plot([CS(:,cur)]);
-        [x, y, b] = ginput(1);
-        if b == '-'
-            cur = max([cur - step, 1]);
-        elseif b == '+'
-            cur = min([cur + step, total_steps]); 
-        elseif b == 'e'
-            break;
+    while (true)
+        w = getW(c, t);
+        plot([c, (t - gT0) / (800 - gT0), -w / 0.5]);
+        usleep(1000);
+        for ss = 1:20
+            [c, t] = dostep(c, t);
         end
     end
     close all;

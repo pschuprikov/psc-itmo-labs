@@ -1,19 +1,31 @@
-function [CS, TS] = step1D(C, T, cp, tp, dt, steps, inner_steps)
+function [c, t] = step1D(a, b, cp, tp, dt, Tign, dz, maxdev)
     constants;
 
-    n = size(C, 1);
-    CS = zeros(n, steps);
-    TS = zeros(n, steps);
+    n = size(cp, 1);
 
-    CS(:,1) = cp;
-    TS(:,1) = tp;
+    wp = getW(cp, tp);
+    w = wp;
 
-    for i = 2:steps
-        w = getW(CS(:,i-1), TS(:,i-1));
-        for j = 1:inner_steps
-            CS(:,i) = max(0, C \ (CS(:,i-1) + dt * gQ / gC * w));
-            TS(:,i) = T \ (TS(:,i-1) - dt * w);
-            w = getW(CS(:,i), TS(:,i));
-        end
-    end
+    do 
+        [C, T] = operators1D(a, b, n, dt);
+            
+        cb = cp + dt * w;
+        c = C \ cb;
+
+        tb = tp - dt * gQ / gC * w;
+        ltz = gLd * dt / (gC * gRo * dz * dz);
+        tb(1) += Tign * ltz;
+        tb(n) += gT0 * ltz;
+
+        t = T \ tb;
+
+        w = getW(c, t);
+
+        devc = max(max(abs(c - cp)' / max(c', ones(1, n))));
+        devt = max(max(abs(t - tp)' / max(t', ones(1, n))));
+        devw = max(max(abs(w - wp)' / max(w', ones(1, n))));
+        
+        dev = max([devc, devt, devw]);
+        dt *= min([1, maxdev / dev]);
+    until (maxdev > dev)
 end

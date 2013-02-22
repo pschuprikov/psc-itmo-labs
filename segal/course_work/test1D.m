@@ -1,13 +1,12 @@
 constants;
 
-Tign = 600;
+Tign = 650;
 a = 0;
-b = 0.02;
-n = 200;
+b = 0.01;
+n = 100;
 dt = 0.1;
+dz = (b - a) / (n - 1);
 
-[c0, t0] = initial1D(a, b, n, Tign, 0.001);
-[C, T] = operators1D(a, b, n, dt);
-[CS, TS] = step1D(C, T, c0, t0, dt, 5000, 1);
+[c0, t0] = initial1D(n, Tign);
 
-run1Dviewer(CS, TS, 10);
+run1Dviewer(c0, t0, @(c, t) step1D(a, b, c, t, dt, Tign, dz, 0.01));
