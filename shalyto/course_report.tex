@@ -2,9 +2,11 @@
 \usepackage[utf8]{inputenc}
 \usepackage[russian]{babel}
 \usepackage{graphicx}
+\usepackage{algpseudocode}
+\usepackage{algorithmicx}
 
 \author{Чуприков Павел Сегреевич}
-\title{Курсовая работа по теме: "Вычисление дискретной временной диаграммы Вороного с помощью графического процессора"}
+\title{Курсовая работа по теме: "Вычисление дискретной временной диаграммы Вороного с использованием графического процессора"}
 \begin{document}
 \begin{titlepage}
 \maketitle
@@ -78,17 +80,61 @@
 
 Отсюда можно понять, зачем нам нужна возможность указать время до каждого отрезка области неоднородности, и оправдание для последнего пункта~\ref{props}. Поясняющий рисунок~\ref{task_fig}.
 
-\section{Обзор существующих алгоримтов}
-\section{Предполагаемый метод}
-\section{Реализация}
-\section{Результаты}
-\section{Дальнейшие исследования}
-
 \begin{figure}
 \center\includegraphics[scale=0.6]{sample.png}
 \caption{Пример временной диаграммы Вороного: имеется несколько ломаных, вдоль которых можно двигаться со скоростью вдвое превышающей скорость вне ломаных. Считается, что время до самых левых точек равно нулю.}
 \label{task_fig}
 \end{figure}
+
+\section{Обзор предыдущих методов}
+В этой части будет рассмотрен метод, или точнее класс методов, построения дискретных диаграмм Вороного, который допускает
+параллельное исполнение во множестве потоков. Затем будет приведено обобщение метода для источников произвольной формы и, наконец, несколько простых результатов, полученные в работе \cite{timeb}, которые далее будут в нашем методе.
+
+\subsection{Jump-Flooding Algorithm (JFA)}
+Идеи рассматриваемого далее алгоритма впервые были представлены в работе Дэниелсона \cite{distmap} в 1980~г. Однако, из-за отсутствия в то время массивно-параллельных (англ. massively-parallel) архитектур, эти идеи тогда были неприменимы на практике. Спустя более чем 20 лет, Гуодонг Ронг и Тиоу-Сенг Тан \cite{jfa} на основе работы Дэниелсона разработали алгоритм построения дискретной диаграммы Вороного, который несложно реализовать на современных графических процессорах, архитектура которых допускает параллельное выполнения более миллиона потоков.
+
+Основу алгоритма состовляет так называемый метод \textbf{JFA} (англ. Jump-Flooding Algorithm). Кратко опишем его на примере диаграммы Вороного. Пусть на вход мы получаем 
+некоторую дискретизацию прямоугольной области равномерной сеткой размера $m \times n$. Каждая ячейка $\mathrm{cell}_{ij}$ содержащая точку источник, содержит некоторую информацию $\mathrm{seed}_{ij}$ о его месте нахождения, иначе некоторый идентефикатор отсутствия определенной информации ${\mathrm{null}}$:
+$$
+	\mathrm{cell}_{ij} = \left\lbrace
+	\begin{array}{ll}
+	\mathrm{seed}_{ij}, & \mbox{в ячейке есть точка-источник} \\
+	\mathrm{null}, & \mbox{в точке нет точки-источника}
+	\end{array}
+	\right.
+$$
+
+Далее информация о точках-источниках будет распространятся на остальные ячейки сетки, и в каждой ячейке будет храниться информация о ближайщем источнике, про который ячейке известно на данный момент. Распространение осуществляется в неколько итераций. Во время одной итерации каждая ячейка в отдельном потоке исполнения получет информацию об источниках от некоторых других ячеек, и выбирает ближайший источник из известных. Пусть $k = \max(\lfloor\log_2n\rfloor, \lfloor\log_2m\rfloor)$, тогда выполним $k$ операций, при этом $i$-ую для ячейки сетки $\mathrm{cell}_{rc}$ можно описать следующим образом:
+
+\begin{algorithmic}
+\label{jfa_algo}
+\State $\mathrm{mindist} \leftarrow \infty$
+\State $\mathrm{step} \gets 2^{k - i}$
+\State $p \gets r - \mathrm{step}$
+\While{ $p \le r + \mathrm{step}$}
+	\State $q \gets c - \mathrm{step}$
+	\While{$q \le c + \mathrm{step}$}
+		\If {$\mathrm{cell}_{pq} \neq \mathrm{null}$}
+			\State $\mathrm{mindist} \gets 
+ 					\min(\mathrm{distanceTo}(\mathrm{cell}_{pq}), \mathrm{mindist})$
+		\EndIf
+		\State $q \gets q + \mathrm{step}$
+ 	\EndWhile
+\State $p \gets p + \mathrm{step}$
+\EndWhile
+\end{algorithmic}
+
+Всего итераций выполняется $k$, однако для уменьшения количества ошибок в статье предлагается выполнять еще одну итерацию с $\mathrm{step}~=~1$. Эксперименты подтверждают уменьшение числа ощибок, при том, что дальнейшее уменьшение числа ощибок с последующими итерациями незначительно. Модификацию \textbf{JFA} с дополнительной итерацией обозначают как \textbf{JFA+1}.
+
+\paragraph{Реализация.} Метод был реализован с использованием графического процессора. Информация о ячейке хранилась в двумерной текстуре. На каждой итерации запускалась отрисовка полноэкранного прямоугольника во внеэкранный фреймбуффер, при этом каждой выходной ячейке соответствует выходной фрагмент и \ref{jfa_algo} выполнялся во фрагментном шейдере.
+
+\subsection{Обобщенные диаграммы Вороного}
+
+
+\section{Предлагаемый метод}
+\section{Реализация}
+\section{Результаты}
+\section{Дальнейшие исследования}
 
 \pagebreak
 
@@ -96,6 +142,8 @@
 \bibitem{survey} Franz Aurenhammer. \textit{Voronoi Diagramm --- A Survey of a Fundamental Geomteric Data Structure}.
 \bibitem{proced} David S. Elbert et al. \textit{Texturing and Modelling, Third Edition: A Procedural Approach}.
 \bibitem{timeb} D. T. Lee, C. S. Liao, W. B. Wang. \textit{Time-Based Voronoi Diagram}.
+\bibitem{distmap} Danielsson P. E. \textit{Euclidian Distance Mapping}. Computer Graphics and Image Processing 14, 227-248.
+\bibitem{jfa} Guodong Rong, Tiow-Seng Tan. \textit{Jump Flooding in GPU with Applications to Voronoi Diagram and Distance Transform}. School of Computing, National University of Singapore, National University of Singapore. 
 \end{thebibliography}
 
 \end{document}
