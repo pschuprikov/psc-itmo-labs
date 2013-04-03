@@ -2,7 +2,7 @@
 #define DISCOVER_LISTENER_H
 
 #include <boost/asio.hpp>
-#include <array>
+#include <boost/array.hpp>
 #include <set>
 
 typedef std::set<boost::asio::ip::tcp::endpoint> endpoints_t;
@@ -14,10 +14,12 @@ struct discover_listener_t
     endpoints_t const& servers() const { return servers_; }
     endpoints_t const& clients() const { return clients_; }
 
+    boost::asio::io_service& service() const { return ios_; }
+
     void print_servers() const;
 
 private:
-    typedef std::array<unsigned char, 260> buffer_t;
+    typedef boost::array<unsigned char, 260> buffer_t;
 
 private:
     void start_receive();

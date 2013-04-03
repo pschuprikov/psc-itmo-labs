@@ -10,7 +10,8 @@ discover_sender_t::discover_sender_t(boost::asio::io_service &ios, boost::asio::
     , timer_(ios)
     , dest_(dest)
 {
-    socket_.set_option(ip::udp::socket::broadcast(true));
+    if (dest_.address().is_multicast())
+        socket_.set_option(ip::udp::socket::broadcast(true));
     start_send();
 }
 

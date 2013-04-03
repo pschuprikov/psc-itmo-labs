@@ -42,6 +42,7 @@ void discover_listener_t::handle_receive(boost::system::error_code const& err,
         cur = read_uint(port, cur);
         servers_.insert(ip::tcp::endpoint(ip::address_v4::from_string(address), port));
     }
+
     start_receive();
 }
 

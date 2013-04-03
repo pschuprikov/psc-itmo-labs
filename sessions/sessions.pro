@@ -11,10 +11,20 @@ LIBS += -lpthread -lboost_system -lboost_thread
 
 SOURCES += main.cpp \
     discover_listener.cpp \
-    discover_sender.cpp
+    discover_sender.cpp \
+    session_manager.cpp \
+    session_validator.cpp \
+    messenger.cpp \
+    global_params.cpp
 
 HEADERS += \
     discover_listener.h \
     lowlevel.hpp \
-    discover_sender.h
+    discover_sender.h \
+    session.h \
+    session_manager.h \
+    session_validator.h \
+    messenger.h \
+    global_params.h \
+    packets.hpp
 
