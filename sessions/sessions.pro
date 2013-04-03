@@ -13,8 +13,8 @@ SOURCES += main.cpp \
     discover_listener.cpp \
     discover_sender.cpp \
     session_manager.cpp \
-    session_validator.cpp \
-    messenger.cpp \
+    #session_validator.cpp \
+    #messenger.cpp \
     global_params.cpp
 
 HEADERS += \
