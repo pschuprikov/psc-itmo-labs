@@ -27,8 +27,8 @@ struct session_ack
     std::string session_id;
     std::string dest_addr;
 
-    typedef std::tuple< string_io<unsigned char, session_ack, &session_ack::dest_addr>,
-                        string_io<unsigned char, session_ack, &session_ack::session_id> > desc;
+    typedef std::tuple< string_io<unsigned char, session_ack, &session_ack::session_id>,
+                        string_io<unsigned char, session_ack, &session_ack::dest_addr> > desc;
 };
 
 struct session_check

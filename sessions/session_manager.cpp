@@ -39,7 +39,7 @@ private:
             return;
         }
 
-        packet_.cname = g_hostaddr.to_string();
+        packet_.cname = g_hostname;
         packet_.dest_addr = addr_.to_string();
 
         write_message(sock_, packet_,
@@ -50,9 +50,13 @@ private:
     {
         auto self = shared_from_this();
         dispatch_message_read(sock_,
-            std::function<void(session_ack)>([&, self] (session_ack ack)
+            std::function<void(session_ack)>([&,self] (session_ack ack) mutable
             {
+                session_req_func func = func_;
+                self.reset();
                 std::cerr << "session_id : " << ack.session_id << " for " << ack.dest_addr << "\n";
+                if (func)
+                    func(session_t(ack.session_id));
             }),
             std::function<void(session_rej)>([&, self](session_rej rej)
             {
@@ -68,7 +72,6 @@ private:
     session_req_func func_;
     boost::asio::ip::address_v4 addr_;
 };
-
 typedef boost::shared_ptr<session_request_connection_t> session_request_connection_ptr;
 
 }
@@ -79,7 +82,7 @@ session_manager_t::session_manager_t(discover_listener_t const& dl)
 
 void session_manager_t::obtain_session_out(boost::asio::ip::address_v4 const& remote)
 {
-    dl_.service().post([=] { obtain_session(remote, session_req_func()); });
+    dl_.service().post([&, remote] { obtain_session(remote, session_req_func()); });
 }
 
 void session_manager_t::obtain_session(const ip::address_v4 &remote, session_req_func func)
