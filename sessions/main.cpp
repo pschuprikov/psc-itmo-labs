@@ -15,7 +15,7 @@ int main()
     io_service ios;
 
     discover_listener_t ds(ios);
-    discover_sender_t dsender(ios, ip::udp::endpoint(g_hostaddr, 9998));
+    discover_sender_t dsender(ios, ip::udp::endpoint(g_hostaddr, g_udp_bcast_port));
     session_manager_t sm(ds);
     messenger_t msg(sm, ds);
 

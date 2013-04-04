@@ -16,11 +16,8 @@ struct session_manager_t
     void obtain_session_out(boost::asio::ip::address_v4 const& remote);
 
     void obtain_session(boost::asio::ip::address_v4 const& remote, session_req_func func);
-private:
 
 private:
-    std::map<boost::asio::ip::address_v4, session_t> sessions_;
-
     discover_listener_t const& dl_;
 };
 

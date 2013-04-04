@@ -2,7 +2,9 @@
 
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/bind.hpp>
+
 #include "messenger.h"
+#include "global_params.h"
 
 using namespace boost::asio;
 
@@ -27,7 +29,7 @@ private:
     void handle_got_session(session_t session)
     {
         session_ = session;
-        sock_.async_connect(ip::tcp::endpoint(addr_, 9999),
+        sock_.async_connect(ip::tcp::endpoint(addr_, g_tcp_send_port),
             bind(&send_connection_t::handle_connect,
                  shared_from_this(), placeholders::error));
     }
@@ -56,11 +58,11 @@ private:
 
 private:
     boost::optional<session_t> session_;
-    message_pack packet_;
-    session_manager_t& sm_;
-    ip::tcp::socket sock_;
-    std::string msg_;
-    ip::address_v4 addr_;
+    message_pack               packet_;
+    session_manager_t&         sm_;
+    ip::tcp::socket            sock_;
+    std::string                msg_;
+    ip::address_v4             addr_;
 };
 typedef boost::shared_ptr<send_connection_t> send_connection_ptr;
 
@@ -113,7 +115,7 @@ typedef boost::shared_ptr<receive_connection_t> receive_connection_ptr;
 messenger_t::messenger_t(session_manager_t &sm, discover_listener_t const& dl)
     : sm_(sm)
     , sv_(dl)
-    , acceptor_(dl.service(), ip::tcp::endpoint(ip::tcp::v4(), 9999))
+    , acceptor_(dl.service(), ip::tcp::endpoint(ip::tcp::v4(), g_tcp_listen_port))
 {
     start_accept();
 }

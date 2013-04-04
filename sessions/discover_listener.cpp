@@ -3,12 +3,13 @@
 
 #include "lowlevel.hpp"
 #include "discover_listener.h"
+#include "global_params.h"
 
 using namespace boost::asio;
 
 discover_listener_t::discover_listener_t(boost::asio::io_service &service)
     : ios_(service)
-    , socket_(service, ip::udp::endpoint(ip::udp::v4(), 9999))
+    , socket_(service, ip::udp::endpoint(ip::udp::v4(), g_udp_listen_port))
 {
     start_receive();
 }
@@ -33,7 +34,7 @@ void discover_listener_t::handle_receive(boost::system::error_code const& err,
     cur = read_uint(type, cur);
 
     if (type == 0)
-        clients_.insert(ip::tcp::endpoint(tmp_remote_.address(), 9998));
+        clients_.insert(ip::tcp::endpoint(tmp_remote_.address(), g_tcp_send_port));
     else
     {
         std::string address;
