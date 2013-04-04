@@ -18,14 +18,14 @@ struct session_request_connection_t
         : dl_(dl), sock_(dl.service()) , func_(func), addr_(addr)
     {}
 
-    void start()
+    void start(boost::optional<ip::address_v4> addr)
     {
-        if (dl_.servers().empty())
+        if ((addr && !dl_.servers().count(*addr)) || dl_.servers().empty())
         {
-            std::cerr << "no servers\n";
+            std::cerr << "no such server\n";
             return;
         }
-        sock_.async_connect(*dl_.servers().begin(),
+        sock_.async_connect(addr ? dl_.servers().at(*addr) : dl_.servers().begin()->second,
             bind(&session_request_connection_t::handle_connect,
                  shared_from_this(), placeholders::error));
     }
@@ -58,7 +58,7 @@ private:
                 if (func)
                     func(session_t(ack.session_id));
             }),
-            std::function<void(session_rej)>([&, self](session_rej rej)
+            std::function<void(session_rej)>([&, self](session_rej)
             {
                 std::cerr << "session request was rejected\n";
             })
@@ -80,13 +80,13 @@ session_manager_t::session_manager_t(discover_listener_t const& dl)
     : dl_(dl)
 {}
 
-void session_manager_t::obtain_session_out(boost::asio::ip::address_v4 const& remote)
+void session_manager_t::obtain_session_out(boost::asio::ip::address_v4 const& remote, boost::optional<boost::asio::ip::address_v4> server)
 {
-    dl_.service().post([&, remote] { obtain_session(remote, session_req_func()); });
+    dl_.service().post([&, remote, server] { obtain_session(remote, session_req_func(), server); });
 }
 
-void session_manager_t::obtain_session(const ip::address_v4 &remote, session_req_func func)
+void session_manager_t::obtain_session(const ip::address_v4 &remote, session_req_func func, boost::optional<ip::address_v4> server)
 {
     session_request_connection_ptr conn(new session_request_connection_t(dl_, remote, func));
-    conn->start();
+    conn->start(server);
 }

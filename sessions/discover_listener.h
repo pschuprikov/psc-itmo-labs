@@ -3,9 +3,9 @@
 
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
-#include <set>
+#include <map>
 
-typedef std::set<boost::asio::ip::tcp::endpoint> endpoints_t;
+typedef std::map<boost::asio::ip::address_v4, boost::asio::ip::tcp::endpoint> endpoints_t;
 
 struct discover_listener_t
 {
@@ -16,14 +16,15 @@ struct discover_listener_t
 
     boost::asio::io_service& service() const { return ios_; }
 
-    void print_servers() const;
+    void print_servers_out() const;
+    void print_clients_out() const;
 
 private:
     typedef boost::array<unsigned char, 260> buffer_t;
 
 private:
     void start_receive();
-    void handle_receive(const boost::system::error_code &err, size_t bytes_transferred);
+    void handle_receive(const boost::system::error_code &err, size_t);
 
 private:
     boost::asio::io_service& ios_;

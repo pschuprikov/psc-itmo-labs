@@ -17,11 +17,11 @@ struct send_connection_t
         : sm_(sm), sock_(ios) , msg_(msg), addr_(addr)
     {}
 
-    void start()
+    void start(boost::optional<ip::address_v4> server)
     {
         std::cerr << "initializing send\n";
         sm_.obtain_session(addr_, boost::bind(&send_connection_t::handle_got_session,
-            shared_from_this(), _1));
+            shared_from_this(), _1), server);
     }
 
 
@@ -84,7 +84,7 @@ private:
     void handle_red()
     {
         data_->sock.close();
-        std::cerr << "got: " <<  packet_.session_id << " " << packet_.message << "\n";
+        std::cerr << "got incoming packet: sid=" <<  packet_.session_id << " msg=\"" << packet_.message << "\"\n";
         sv_.validate(packet_.session_id,
             boost::bind(&receive_connection_t::handle_session_checked, shared_from_this(), _1));
     }
@@ -97,9 +97,7 @@ private:
             return;
         }
         else
-        {
-            std::cerr << " got message from: " << data_->remote << "\n" << packet_.message << "\n";
-        }
+            std::cout << "got message from: " << data_->remote << "\n" << packet_.message << "\n";
     }
 
 private:
@@ -120,16 +118,16 @@ messenger_t::messenger_t(session_manager_t &sm, discover_listener_t const& dl)
     start_accept();
 }
 
-void messenger_t::send_message_out(std::string const& msg, ip::address_v4 const& addr)
+void messenger_t::send_message_out(std::string const& msg, ip::address_v4 const& addr, boost::optional<ip::address_v4> server)
 {
     acceptor_.get_io_service().post(
-        [&, msg, addr] { send_message(msg, addr); } );
+        [&, msg, addr, server] { send_message(msg, addr); } );
 }
 
-void messenger_t::send_message(std::string const& msg, ip::address_v4 const& addr)
+void messenger_t::send_message(std::string const& msg, ip::address_v4 const& addr, boost::optional<ip::address_v4> server)
 {
     send_connection_ptr conn(new send_connection_t(acceptor_.get_io_service(), sm_, msg, addr));
-    conn->start();
+    conn->start(server);
 }
 
 void messenger_t::start_accept( )

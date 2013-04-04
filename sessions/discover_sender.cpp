@@ -7,8 +7,8 @@ using namespace std::placeholders;
 
 discover_sender_t::discover_sender_t(boost::asio::io_service &ios, boost::asio::ip::udp::endpoint dest)
     : socket_(ios, ip::udp::endpoint())
-    , timer_(ios)
     , dest_(dest)
+    , timer_(ios)
 {
     if (dest_.address().is_multicast())
         socket_.set_option(ip::udp::socket::broadcast(true));

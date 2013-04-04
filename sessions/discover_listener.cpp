@@ -21,8 +21,7 @@ void discover_listener_t::start_receive()
             placeholders::error, placeholders::bytes_transferred));
 }
 
-void discover_listener_t::handle_receive(boost::system::error_code const& err,
-    size_t bytes_transferred)
+void discover_listener_t::handle_receive(boost::system::error_code const& err, size_t)
 {
     if (err)
     {
@@ -34,26 +33,41 @@ void discover_listener_t::handle_receive(boost::system::error_code const& err,
     cur = read_uint(type, cur);
 
     if (type == 0)
-        clients_.insert(ip::tcp::endpoint(tmp_remote_.address(), g_tcp_send_port));
+    {
+        ip::tcp::endpoint ep(tmp_remote_.address(), g_tcp_send_port);
+        clients_.insert(std::make_pair(ep.address().to_v4(), ep));
+    }
     else
     {
         std::string address;
         cur = read_string<unsigned char>(address, cur);
         unsigned short port;
         cur = read_uint(port, cur);
-        servers_.insert(ip::tcp::endpoint(ip::address_v4::from_string(address), port));
+        ip::tcp::endpoint ep(ip::address_v4::from_string(address), port);
+        servers_.insert(std::make_pair(ep.address().to_v4(), ep));
     }
 
     start_receive();
 }
 
-void discover_listener_t::print_servers() const
+void discover_listener_t::print_servers_out() const
 {
     ios_.post([&]{
         std::cerr << "severs:\n";
         for (endpoints_t::const_iterator it = servers().begin(); it != servers().end(); ++it)
         {
-            std::cerr << *it << "\n";
+            std::cerr << it->second << "\n";
+        }
+    });
+}
+
+void discover_listener_t::print_clients_out() const
+{
+    ios_.post([&]{
+        std::cerr << "clients:\n";
+        for (endpoints_t::const_iterator it = clients().begin(); it != clients().end(); ++it)
+        {
+            std::cerr << it->second << "\n";
         }
     });
 }

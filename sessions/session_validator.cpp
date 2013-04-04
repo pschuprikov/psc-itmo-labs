@@ -26,7 +26,7 @@ struct session_validate_connection_t
             return;
         }
 
-        sock_.async_connect(*dl_.servers().begin(),
+        sock_.async_connect(dl_.servers().begin()->second,
             bind(&session_validate_connection_t::handle_connect,
                  shared_from_this(), placeholders::error));
     }

@@ -21,8 +21,8 @@ public:
 public:
     messenger_t(session_manager_t& sm, discover_listener_t const& dl);
 
-    void send_message_out(std::string const& msg, const boost::asio::ip::address_v4 &addr);
-    void send_message(std::string const& msg, const boost::asio::ip::address_v4 &addr);
+    void send_message_out(std::string const& msg, const boost::asio::ip::address_v4 &addr, boost::optional<boost::asio::ip::address_v4> server = boost::none);
+    void send_message(std::string const& msg, const boost::asio::ip::address_v4 &addr, boost::optional<boost::asio::ip::address_v4> server = boost::none);
 
 private:
     void start_accept();

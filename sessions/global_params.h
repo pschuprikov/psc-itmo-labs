@@ -5,6 +5,7 @@
 
 extern std::string const g_hostname;
 extern boost::asio::ip::address_v4 const g_hostaddr;
+extern boost::asio::ip::address_v4 const g_bcast_addr;
 extern unsigned short const g_udp_listen_port;
 extern unsigned short const g_udp_bcast_port;
 extern unsigned short const g_tcp_listen_port;
