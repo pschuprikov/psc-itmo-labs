@@ -30,5 +30,99 @@
  acmid = {1477882},
  publisher = {ACM},
  address = {New York, NY, USA},
- keywords = {marine simulator, physically based wave modeling, real-time wave rendering, shallow-water waves simulation},
+ keywords = {marine simulator, physically based wave modeling, real-time wave rendering, shallow-water waves simulation}
+}
+
+%% inria-00443630, version 3
+%% http://hal.inria.fr/inria-00443630
+@article{brdf,
+    hal_id = {inria-00443630},
+    url = {http://hal.inria.fr/inria-00443630},
+    title = {{Real-time Realistic Ocean Lighting using Seamless Transitions from Geometry to BRDF}},
+    author = {Bruneton, Eric and Neyret, Fabrice and Holzschuch, Nicolas},
+    abstract = {{Realistic animation and rendering of the ocean is an important aspect for simulators, movies and video games. By nature, the ocean is a difficult problem for Computer Graphics: it is a dynamic system, it combines wave trains at all scales, ranging from kilometric to millimetric. Worse, the ocean is usually viewed at several distances, from very close to the viewpoint to the horizon, increasing the multi-scale issue, and resulting in aliasing problems. The illumination comes from natural light sources (the Sun and the sky dome), is also dynamic, and often underlines the aliasing issues. In this paper, we present a new algorithm for modelling, animation, illumination and rendering of the ocean, in real-time, at all scales and for all viewing distances. Our algorithm is based on a hierarchical representation, combining geometry, normals and BRDF. For each viewing distance, we compute a simplified version of the geometry, and encode the missing details into the normal and the BRDF, depending on the level of detail required. We then use this hierarchical representation for illumination and rendering. Our algorithm runs in real-time, and produces highly realistic pictures and animations.}},
+    language = {Anglais},
+    affiliation = {EVASION - INRIA Grenoble Rh{\^o}ne-Alpes / LJK Laboratoire Jean Kuntzmann , ARTIS - INRIA Grenoble Rh{\^o}ne-Alpes / LJK Laboratoire Jean Kuntzmann},
+    publisher = {Blackwell Publishing},
+    pages = {487-496},
+    journal = {Computer Graphics Forum},
+    volume = {29},
+    number = {2 },
+    note = {EUROGRAPHICS 2010 (full paper) - Session Rendering I },
+    audience = {internationale },
+    doi = {10.1111/j.1467-8659.2009.01618.x },
+    year = {2010},
+    month = May,
+    pdf = {http://hal.inria.fr/inria-00443630/PDF/article-1.pdf}
+}
+
+@misc{outerra,
+    title = "Ocean Rendering",
+    author = "Brano Kemen",
+    url = "http://outerra.blogspot.ru/2011/02/ocean-rendering.html"
+}
+
+@article{fournier,
+ author = {Fournier, Alain and Reeves, William T.},
+ title = {A simple model of ocean waves},
+ journal = {SIGGRAPH Comput. Graph.},
+ issue_date = {Aug. 1986},
+ volume = {20},
+ number = {4},
+ month = aug,
+ year = {1986},
+ issn = {0097-8930},
+ pages = {75--84},
+ numpages = {10},
+ url = {http://doi.acm.org/10.1145/15886.15894},
+ doi = {10.1145/15886.15894},
+ acmid = {15894},
+ publisher = {ACM},
+ address = {New York, NY, USA}
+}
+
+@article{foam,
+ author = {Robin Pike},
+ title = {Foam: An Introduction},
+ journal = {Streamline Watershed Management Bulletin},
+ issue_date = {Fall 2003},
+ volume = {7},
+ number = {3},
+ year = {2003},
+ url = {http://www.lakepanachecampers.com/Foaming%20Water.pdf}
+} 
+
+@article{mixed,
+title = "Ocean waves synthesis and animation using real world information ",
+journal = "Computers \& Graphics ",
+volume = "26",
+number = "1",
+pages = "99 - 108",
+year = "2002",
+note = "",
+issn = "0097-8493",
+doi = "10.1016/S0097-8493(01)00161-3",
+url = "http://www.sciencedirect.com/science/article/pii/S0097849301001613",
+author = "S?bastien Thon and Djamchid Ghazanfarpour",
+keywords = "Realistic ocean waves",
+keywords = "Spectral model",
+keywords = "Automatic synthesis",
+keywords = "Image based",
+keywords = "Buoy data "
+}
+
+@MISC{projected,
+    author = {Claes Johanson and Calle Lejdfors and Saab Bofors Dynamics},
+    title = {Real-time water rendering Introducing},
+    year = {2004}
+}
+
+@incollection{deferred,
+    author = {Rusty Koonce},
+    title = {Deferred Shading in Tabula Rasa},
+    booktitle = {GPU Gems 3},
+    editor = {Hubert Nguyen},
+    publisher = {Addison-Wesley},
+    year = {2008},
+    pages = {429--457}
 }
