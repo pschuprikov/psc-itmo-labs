@@ -1,0 +1,87 @@
+\documentclass[leqno]{report}
+
+\renewcommand{\rmdefault}{fjn}
+\renewcommand{\ttdefault}{fcr}
+
+
+\usepackage[cp1251]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english,russian]{babel}
+\usepackage{expdlist}
+\usepackage[dvips]{graphicx}
+
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+%\usepackage{amsfonts}
+\usepackage{amsxtra} 
+\usepackage{sty/dbl12}
+\usepackage{sty/rac}
+\usepackage{epsfig}
+\usepackage{verbatim}                      
+\usepackage[russian]{sty/ralg}                       
+
+\usepackage{listings}
+
+\setlength{\oddsidemargin}{0.5in}
+\include{header}
+
+\newcommand{\todo}[1]{\vspace{5 mm}\par \noindent
+    \marginpar{\textsc{ToDo}}
+    \framebox{\begin{minipage}[c]{0.95 \textwidth}
+\tt #1 \end{minipage}}\vspace{5mm}\par}
+
+\binoppenalty=10000
+\relpenalty=10000
+
+\begin{document}
+
+\bibliographystyle{sty/gost71s}
+
+\pagestyle{title}
+
+\begin{center}
+\sffamily
+Санкт-Петербургский национальный исследовательский университет информационных технологий, механики и оптики
+
+\vspace{2cm}
+
+Кафедра <<Компьютерные технологии>>
+
+\vspace{3cm}
+
+{\LARGE П. С. Чуприков}
+
+\vspace{3cm}
+
+{\LARGE\bfseries Реалистичная визуализация приливных волн в реальном времени}
+
+\vspace{5cm}
+
+Бакалаврская работа
+
+\vspace{1cm}
+
+Научный руководитель: Романов А. А.
+
+\vspace{6cm}
+Санкт-Петербург\\2013
+
+\end{center}
+
+\newpage
+
+\setcounter{page}{2}
+\pagestyle{plain}
+
+\tableofcontents
+
+\startthechapters
+\startprefacepage
+\input{parts/intro}
+\input{parts/chapter1}
+
+
+\bibliography{thesis}
+
+\end{document}
