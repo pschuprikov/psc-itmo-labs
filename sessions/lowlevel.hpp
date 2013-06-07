@@ -14,7 +14,7 @@ namespace
 template<class Uint, class Iter>
 Iter read_uint(Uint& uint, Iter beg)
 {
-    unsigned char * out = reinterpret_cast<unsigned char *>(&uint);
+    auto out = reinterpret_cast<unsigned char *>(&uint);
     std::copy(beg, beg + sizeof(Uint), out);
     std::reverse(out, out + sizeof(Uint));
     return beg + sizeof(Uint);
@@ -35,8 +35,8 @@ struct uint_io
     template<class Socket, class Func>
     static void write(Socket& sock, Struct const& s, Func func)
     {
-        std::shared_ptr<Uint> out_value(new Uint(s.*uint));
-        unsigned char * out = reinterpret_cast<unsigned char *>(out_value.get());
+        auto out_value = std::make_shared<Uint>(s.*uint);
+        auto out = reinterpret_cast<unsigned char *>(out_value.get());
         std::reverse(out, out + sizeof(Uint));
         boost::asio::async_write(sock, boost::asio::buffer(out_value.get(), sizeof(Uint)),
         [out_value, func] (boost::system::error_code const& err, size_t)
@@ -50,7 +50,7 @@ struct uint_io
         [&s, func] (boost::system::error_code const& err, size_t)
         {
             if (err) { std::cerr << err.message() << "\n"; return; }
-            unsigned char * out = reinterpret_cast<unsigned char *>(&(s.*uint));
+            auto out = reinterpret_cast<unsigned char *>(&(s.*uint));
             std::reverse(out, out + sizeof(Uint));
             func();
         });
@@ -81,7 +81,7 @@ struct string_io
     template<class Socket, class Func>
     static void write(Socket& sock, Struct const& s, Func func)
     {
-        std::shared_ptr< uint_io_single<Uint> > length(new uint_io_single<Uint>((s.*str).length()));
+        auto length = std::make_shared<uint_io_single<Uint>>((s.*str).length());
         length->write(sock, [length, &s, &sock, func]
         {
             boost::asio::async_write(sock, boost::asio::buffer(s.*str),
@@ -96,7 +96,7 @@ struct string_io
         std::shared_ptr< uint_io_single<Uint> > length(new uint_io_single<Uint>());
         length->read(sock, [&s, &sock, func, length] ()
         {
-            std::shared_ptr<std::vector<unsigned char>> buf(new std::vector<unsigned char>(length->value));
+            auto buf = std::make_shared<std::vector<unsigned char>>(length->value);
             boost::asio::async_read(sock, boost::asio::buffer(*buf), [=,&s]
             (boost::system::error_code const& err, size_t)
             {
@@ -147,7 +147,7 @@ struct read_message_t<-1>
 template<class Socket, class Packet, class Func>
 inline void write_message(Socket& sock, Packet const& pack, Func func)
 {
-    std::shared_ptr< uint_io_single<unsigned char> > type(new uint_io_single<unsigned char>(Packet::type));
+    auto type = std::make_shared<uint_io_single<unsigned char> >(Packet::type);
     type->write(sock, [func, type, &sock, &pack] () {
         write_message_t<std::tuple_size<typename Packet::desc>::value - 1>(sock, pack, func);
     });
@@ -162,7 +162,7 @@ inline void read_message_impl(Socket& sock, Packet& pack, Func func)
 template<class Socket, class Packet, class Func>
 inline void read_message(Socket& sock, Packet& pack, Func func)
 {
-    std::shared_ptr< uint_io_single<unsigned char> > type(new uint_io_single<unsigned char>(Packet::type));
+    auto type = std::make_shared<uint_io_single<unsigned char> >(Packet::type);
     type->read(sock, [func, type, &sock, &pack] () {
         read_message_impl(sock, pack, [func] () { func(); });
     });
@@ -180,7 +180,7 @@ inline void finish_dispatch(Socket& sock, unsigned char type, Processor proc, Ar
     typedef typename Processor::argument_type Packet;
     if (Packet::type == type)
     {
-        boost::shared_ptr<Packet> pack(new Packet());
+        auto pack = std::make_shared<Packet>();
         read_message_impl(sock, *pack, [pack, proc] () { proc(*pack); });
     }
     else
@@ -190,7 +190,7 @@ inline void finish_dispatch(Socket& sock, unsigned char type, Processor proc, Ar
 template<class Socket, class... Args>
 inline void dispatch_message_read(Socket& sock, Args... args)
 {
-    std::shared_ptr< uint_io_single<unsigned char> > type(new uint_io_single<unsigned char>());
+    auto type = std::make_shared<uint_io_single<unsigned char> >();
     type->read(sock, [=, &sock] ()
     { finish_dispatch(sock, type->value, args...); });
 }

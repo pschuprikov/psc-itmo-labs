@@ -8,6 +8,7 @@
 #include "discover_listener.h"
 
 typedef std::function<void(session_t)> session_req_func;
+typedef std::map<boost::asio::ip::address_v4, session_t> sessions_storage_t;
 
 struct session_manager_t
 {

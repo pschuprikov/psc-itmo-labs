@@ -50,7 +50,7 @@ private:
     {
         auto self = shared_from_this();
         dispatch_message_read(sock_,
-            std::function<void(session_ack)>([&,self] (session_ack ack) mutable
+            std::function<void(session_ack)>([&, self] (session_ack ack) mutable
             {
                 session_req_func func = func_;
                 self.reset();

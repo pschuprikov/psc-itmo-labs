@@ -6,12 +6,11 @@ using namespace boost::asio;
 using namespace std::placeholders;
 
 discover_sender_t::discover_sender_t(boost::asio::io_service &ios, boost::asio::ip::udp::endpoint dest)
-    : socket_(ios, ip::udp::endpoint())
+    : socket_(ios, ip::udp::v4())
     , dest_(dest)
     , timer_(ios)
 {
-    if (dest_.address().is_multicast())
-        socket_.set_option(ip::udp::socket::broadcast(true));
+    socket_.set_option(ip::udp::socket::broadcast(true));
     start_send();
 }
 
@@ -26,6 +25,6 @@ void discover_sender_t::handle_send(boost::system::error_code const& err)
 {
     if (err)
         std::cerr << err.message() << "\n";
-    timer_.expires_from_now(boost::posix_time::seconds(1));
+    timer_.expires_from_now(boost::posix_time::seconds(5));
     timer_.async_wait(boost::bind(&discover_sender_t::start_send, this));
 }

@@ -28,6 +28,16 @@ int main()
         {
             if (cmd == "exit")
                 break;
+            else if (cmd == "help")
+            {
+                std::cout << "help:\n"
+                             " listservers\n"
+                             " listclients\n"
+                             " getsession %remote%\n"
+                             " getsessionusing %remote% %server%\n"
+                             " send %remote% %message%\n"
+                             " sendusing %remote% %message% %server%\n";
+            }
             else if (cmd == "listservers")
                 ds.print_servers_out();
             else if (cmd == "listclients")

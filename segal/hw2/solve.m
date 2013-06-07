@@ -1,12 +1,12 @@
 clear ; close all; clc
-mu    = 0.12;
-kappa = 0.00012;
+mu    = 0.0;
+kappa = 1;
 
 a = 0;
 b = 1;
 
-n = 100;
-dt = 0.01;
+n = 1000;
+dt = 0.011;
 
 x0 = gen_impulse(a, b, n, 0, 0.3, 10);
 

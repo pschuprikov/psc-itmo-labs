@@ -1,5 +1,5 @@
-gK  =    1000000000; % 1 / sec
-gE  =        110000; % J / mol
+gK  =     100000000; % 1 / sec
+gE  =         97527; % J / mol
 gR  =         8.314; % J / mol * kg
 gQ  =           7e5; % J / kg
 gC  =          1980; % J / kg * K

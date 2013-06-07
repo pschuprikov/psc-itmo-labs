@@ -24,10 +24,8 @@ void discover_listener_t::start_receive()
 void discover_listener_t::handle_receive(boost::system::error_code const& err, size_t)
 {
     if (err)
-    {
         std::cerr << err.message() << "\n";
-    }
-    buffer_t::iterator cur = buf_.begin();
+    auto cur = buf_.begin();
 
     unsigned char type;
     cur = read_uint(type, cur);
@@ -55,9 +53,7 @@ void discover_listener_t::print_servers_out() const
     ios_.post([&]{
         std::cerr << "severs:\n";
         for (endpoints_t::const_iterator it = servers().begin(); it != servers().end(); ++it)
-        {
             std::cerr << it->second << "\n";
-        }
     });
 }
 
@@ -66,8 +62,6 @@ void discover_listener_t::print_clients_out() const
     ios_.post([&]{
         std::cerr << "clients:\n";
         for (endpoints_t::const_iterator it = clients().begin(); it != clients().end(); ++it)
-        {
             std::cerr << it->second << "\n";
-        }
     });
 }
