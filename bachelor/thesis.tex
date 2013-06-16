@@ -1,11 +1,7 @@
 \documentclass[leqno]{report}
 
-\renewcommand{\rmdefault}{fjn}
-\renewcommand{\ttdefault}{fcr}
-
-
-\usepackage[cp1251]{inputenc}
 \usepackage[T2A]{fontenc}
+\usepackage[cp1251]{inputenc}
 \usepackage[english,russian]{babel}
 \usepackage{expdlist}
 \usepackage[dvips]{graphicx}
@@ -17,6 +13,8 @@
 \usepackage{amsxtra} 
 \usepackage{sty/dbl12}
 \usepackage{sty/rac}
+\usepackage{epsfig}
+\usepackage{srcltx}
 \usepackage{epsfig}
 \usepackage{verbatim}                      
 \usepackage[russian]{sty/ralg}                       
@@ -75,6 +73,24 @@
 \pagestyle{plain}
 
 \tableofcontents
+
+\def\t#1{\texttt{\hbox{#1}}}
+\def\b#1{\textbf{#1}}
+\def\tb#1{\t{\b{#1}}}
+\def\drawfigure#1#2#3{
+        \begin{figure}[H]
+        \centerline{ \includegraphics{#1}}
+        \caption{#2}
+        \label{#3}
+        \end{figure}
+}
+\def\drawfigurex#1#2#3#4#5{
+        \begin{figure}[#1]
+        \centerline{ \includegraphics[#2]{#3}}
+        \caption{#4}
+        \label{#5}
+        \end{figure}
+}
 
 \startthechapters
 \startprefacepage
