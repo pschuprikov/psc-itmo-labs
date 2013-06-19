@@ -52,7 +52,7 @@
 
 \vspace{3cm}
 
-{\LARGE\bfseries Реалистичная визуализация приливных волн в реальном времени}
+{\LARGE\bfseries Реалистичная визуализация прибрежных волн в реальном времени}
 
 \vspace{5cm}
 
@@ -69,7 +69,7 @@
 
 \newpage
 
-\setcounter{page}{2}
+\setcounter{page}{3}
 \pagestyle{plain}
 
 \tableofcontents
@@ -86,19 +86,22 @@
 }
 \def\drawfigurex#1#2#3#4#5{
         \begin{figure}[#1]
-        \centerline{ \includegraphics[#2]{#3}}
+        \centerline{\includegraphics[#2]{#3}}
         \caption{#4}
         \label{#5}
         \end{figure}
 }
 
-\def\bvec#1{\vec{\mathbf{#1}}}
+\def\bvec#1{\mathbf{#1}}
 
 \startthechapters
 \startprefacepage
 \input{parts/intro}
 \input{parts/chapter1}
 \input{parts/chapter2}
+\input{parts/chapter3}
+\startconclusionpage
+\input{parts/conclusion}
 
 \bibliography{thesis}
 
