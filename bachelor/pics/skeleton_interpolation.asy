@@ -12,8 +12,8 @@ perp = (-perp.y, perp.x);
 coordsys csbc = cartesiansystem(b, i=unit(c - b), j=perp);
 
 string desc(string l) {
-    return bvec(l) +  "$\{\mathrm{TC}_x^{" + l 
-                   + "},\mathrm{TC}_y^{" + l 
+    return bvec(l) +  "$\{\xi_x^{" + l 
+                   + "},\xi_y^{" + l 
                    + "}\}$";
 }
 
